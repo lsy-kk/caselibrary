@@ -10,20 +10,4 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/user")
 public class UserController {
 
-    /**
-     * 登录
-     * @return
-     */
-    @PostMapping("/login")
-    public ApiResult login(){
-        return ApiResult.success();
-    }
-
-    /**
-     * 注册
-     */
-    @PostMapping("/register")
-    public ApiResult register(){
-        return ApiResult.success();
-    }
 }

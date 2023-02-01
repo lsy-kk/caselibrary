@@ -7,8 +7,8 @@ import java.util.Date;
 @Data
 public class Case {
 
-    private Date create_time;
+    private Date createTime;
 
-    private Date update_time;
+    private Date updateTime;
 
 }

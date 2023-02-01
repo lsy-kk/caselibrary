@@ -37,7 +37,7 @@ public class LoginServiceImpl implements LoginService {
         }
         /* 加密密码 */
         String password = DigestUtils.md5Hex(loginParam.getPassword() + slat);
-        User user = userService.findUserByEmailAndPassword(loginParam.getEmail(),loginParam.getPassword());
+        User user = userService.findUserByEmailAndPassword(loginParam.getEmail(), password);
         if (user == null){
             return ApiResult.fail(ErrorCode.ACCOUNT_PWD_NOT_EXIST.getCode(),ErrorCode.ACCOUNT_PWD_NOT_EXIST.getMsg());
         }

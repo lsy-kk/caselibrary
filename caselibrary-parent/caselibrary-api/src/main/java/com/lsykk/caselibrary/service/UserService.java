@@ -4,6 +4,7 @@ import com.lsykk.caselibrary.dao.pojo.User;
 import com.lsykk.caselibrary.vo.ApiResult;
 import com.lsykk.caselibrary.vo.LoginVo;
 import com.lsykk.caselibrary.vo.params.LoginParam;
+import com.lsykk.caselibrary.vo.params.PageParams;
 
 public interface UserService {
 
@@ -13,6 +14,13 @@ public interface UserService {
      * @return
      */
     ApiResult findUserByToken(String token);
+
+    /**
+     * 分页获取用户列表
+     * @param pageParams
+     * @return
+     */
+    ApiResult getUserList(PageParams pageParams);
 
     /**
      * 根据user_id查找用户
@@ -37,11 +45,18 @@ public interface UserService {
     User findUserByEmailAndPassword(String email, String password);
 
     /**
-     * 保存用户（新增或更新）
+     * 保存用户（新增）
      * @param user
      * @return
      */
     void saveUser(User user);
+
+    /**
+     * 根据user_id更新用户
+     * @param user
+     * @return
+     */
+    void updateUser(User user);
 
     /**
      * 根据user_id删除用户

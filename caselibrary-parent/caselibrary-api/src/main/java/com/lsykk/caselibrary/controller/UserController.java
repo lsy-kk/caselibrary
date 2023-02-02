@@ -1,6 +1,7 @@
 package com.lsykk.caselibrary.controller;
 
 import com.lsykk.caselibrary.dao.pojo.User;
+import com.lsykk.caselibrary.service.LoginService;
 import com.lsykk.caselibrary.service.UserService;
 import com.lsykk.caselibrary.vo.ApiResult;
 import com.lsykk.caselibrary.vo.params.PageParams;
@@ -13,20 +14,34 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     @Autowired
     public UserService userService;
+    @Autowired
+    public LoginService loginService;
 
-    @PostMapping("/getlist")
-    public ApiResult getUserList(@RequestBody PageParams pageParams){
-        return userService.getUserList(pageParams);
+    @GetMapping("/getlist")
+    public ApiResult getUserList(@RequestParam(defaultValue = "1") Integer page,
+                                 @RequestParam(defaultValue = "10") Integer pageSize,
+                                 @RequestParam(required = false)  Long id,
+                                 @RequestParam(required = false)  String email,
+                                 @RequestParam(required = false)  Integer authority){
+        PageParams pageParams = new PageParams(page, pageSize);
+        User user = new User();
+        user.setId(id);
+        user.setEmail(email);
+        user.setAuthority(authority);
+        return userService.getUserList(pageParams, user);
     }
-    @PostMapping("/save")
-    public ApiResult save(@RequestBody User user){
-        userService.saveUser(user);
-        return ApiResult.success();
+    @PostMapping("/insert")
+    public ApiResult insert(@RequestBody User user){
+        return userService.insertUser(user);
     }
 
     @PutMapping("/update")
     public ApiResult update(@RequestBody User user){
-        userService.updateUser(user);
-        return ApiResult.success();
+        return userService.updateUser(user);
+    }
+
+    @PutMapping("/updatePassword")
+    public ApiResult updatePassword(@RequestBody User user){
+        return userService.updatePassword(user);
     }
 }

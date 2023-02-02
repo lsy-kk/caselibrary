@@ -36,7 +36,7 @@ public class LoginServiceImpl implements LoginService {
             return ApiResult.fail(ErrorCode.PARAMS_ERROR.getCode(),ErrorCode.PARAMS_ERROR.getMsg());
         }
         /* 加密密码 */
-        String password = DigestUtils.md5Hex(loginParam.getPassword() + slat);
+        String password = encryptedPassword(loginParam.getPassword());
         User user = userService.findUserByEmailAndPassword(loginParam.getEmail(), password);
         if (user == null){
             return ApiResult.fail(ErrorCode.ACCOUNT_PWD_NOT_EXIST.getCode(),ErrorCode.ACCOUNT_PWD_NOT_EXIST.getMsg());
@@ -45,6 +45,11 @@ public class LoginServiceImpl implements LoginService {
         String token = JWTUtils.createToken(user.getId());
         redisTemplate.opsForValue().set("TOKEN_"+token, JSON.toJSONString(user),1, TimeUnit.DAYS);
         return ApiResult.success(token);
+    }
+
+    @Override
+    public String encryptedPassword(String password){
+        return DigestUtils.md5Hex(password + slat);
     }
 
     @Override

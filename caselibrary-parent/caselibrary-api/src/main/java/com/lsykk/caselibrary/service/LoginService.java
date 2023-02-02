@@ -28,6 +28,13 @@ public interface LoginService {
     ApiResult register(LoginParam loginParam);
 
     /**
+     * 加密密码
+     * @param password
+     * @return
+     */
+    String encryptedPassword(String password);
+
+    /**
      * 根据token返回对应User
      * @param token
      * @return

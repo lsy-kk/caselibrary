@@ -1,5 +1,6 @@
 package com.lsykk.caselibrary.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lsykk.caselibrary.dao.mapper.UserMapper;
@@ -7,15 +8,19 @@ import com.lsykk.caselibrary.dao.pojo.Case;
 import com.lsykk.caselibrary.dao.pojo.User;
 import com.lsykk.caselibrary.service.LoginService;
 import com.lsykk.caselibrary.service.UserService;
+import com.lsykk.caselibrary.utils.JWTUtils;
 import com.lsykk.caselibrary.vo.ApiResult;
 import com.lsykk.caselibrary.vo.ErrorCode;
 import com.lsykk.caselibrary.vo.LoginVo;
 import com.lsykk.caselibrary.vo.params.PageParams;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 
 @Service
@@ -46,11 +51,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ApiResult getUserList(PageParams pageParams){
-        // 分页查询 user数据库表
+    public ApiResult getUserList(PageParams pageParams, User user){
+        /* 分页查询 user数据库表 */
         Page<User> page = new Page<>(pageParams.getPage(), pageParams.getPageSize());
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-        // 按照时间顺序排序
+        /* 动态SQL语句 */
+        queryWrapper.eq(user.getId()!=null, User::getId, user.getId());
+        queryWrapper.like(StringUtils.isNotBlank(user.getEmail()), User::getEmail, user.getEmail());
+        queryWrapper.eq(user.getAuthority()!=null, User::getAuthority, user.getAuthority());
+        /* 按照ID顺序排序 */
         queryWrapper.orderByDesc(User::getId);
         Page<User> userPage = userMapper.selectPage(page, queryWrapper);
         List<User> userList = userPage.getRecords();
@@ -81,15 +90,53 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void saveUser(User user) {
-        user.setStatus(1);
         userMapper.insert(user);
     }
 
     @Override
-    public void updateUser(User user){
+    public ApiResult updatePassword(User user){
+        /* 这里的user密码没有加密，需要加密保存 */
+        user.setPassword(loginService.encryptedPassword(user.getPassword()));
         userMapper.updateById(user);
+        return ApiResult.success();
     }
 
+    @Override
+    public ApiResult updateUser(User user){
+        /* 检查参数是否合法 */
+        if (user.getId() == null
+                || StringUtils.isBlank(user.getEmail())
+                || StringUtils.isBlank(user.getUsername())
+                || StringUtils.isBlank(user.getPassword())){
+            return ApiResult.fail(ErrorCode.PARAMS_ERROR.getCode(), ErrorCode.PARAMS_ERROR.getMsg());
+        }
+        /* 检查邮箱是否唯一 */
+        User emailUser = findUserByEmail(user.getEmail());
+        if (emailUser != null && !user.getId().equals(emailUser.getId())){
+            return ApiResult.fail(ErrorCode.ACCOUNT_EXIST.getCode(),"该邮箱已经被注册了");
+        }
+        userMapper.updateById(user);
+        return ApiResult.success();
+    }
+
+    @Override
+    public ApiResult insertUser(User user){
+        /* 检查参数是否合法 */
+        if (StringUtils.isBlank(user.getEmail())
+                || StringUtils.isBlank(user.getUsername())
+                || StringUtils.isBlank(user.getPassword())){
+            return ApiResult.fail(ErrorCode.PARAMS_ERROR.getCode(), ErrorCode.PARAMS_ERROR.getMsg());
+        }
+        /* 检查邮箱是否唯一 */
+        if (findUserByEmail(user.getEmail()) != null){
+            return ApiResult.fail(ErrorCode.ACCOUNT_EXIST.getCode(),"该邮箱已经被注册了");
+        }
+        user.setPassword(loginService.encryptedPassword(user.getPassword()));
+        user.setImage("");
+        user.setStatus(1);
+        saveUser(user);
+        return ApiResult.success();
+    }
     @Override
     public void deleteUserById(Long id) {
         userMapper.deleteById(id);

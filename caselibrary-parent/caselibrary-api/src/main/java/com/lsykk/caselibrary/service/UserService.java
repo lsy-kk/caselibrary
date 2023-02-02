@@ -20,7 +20,7 @@ public interface UserService {
      * @param pageParams
      * @return
      */
-    ApiResult getUserList(PageParams pageParams);
+    ApiResult getUserList(PageParams pageParams, User user);
 
     /**
      * 根据user_id查找用户
@@ -45,18 +45,33 @@ public interface UserService {
     User findUserByEmailAndPassword(String email, String password);
 
     /**
-     * 保存用户（新增）
+     * 保存用户
      * @param user
      * @return
      */
     void saveUser(User user);
 
     /**
-     * 根据user_id更新用户
+     * 新增用户
      * @param user
      * @return
      */
-    void updateUser(User user);
+    ApiResult insertUser(User user);
+
+    /**
+     * 根据id更新用户密码（也可用于更新状态、权限）
+     * @param user
+     * @return
+     */
+    ApiResult updatePassword(User user);
+
+    /**
+     * 根据user_id更新用户信息（用户名、头像、状态、权限、邮箱）
+     * 该接口不能用于更新密码
+     * @param user
+     * @return
+     */
+    ApiResult updateUser(User user);
 
     /**
      * 根据user_id删除用户

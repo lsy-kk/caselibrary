@@ -10,6 +10,6 @@ public class WebMVCConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         //跨域配置，便于前后端访问；本地测试 端口不一致 也算跨域
         //允许8080端口访问后端
-        registry.addMapping("/**").allowedOrigins("http://localhost:5173").allowedMethods("GET","POST","PUT");
+        registry.addMapping("/**").allowedOrigins("*").allowedMethods("GET","POST","PUT");
     }
 }

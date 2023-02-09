@@ -7,32 +7,26 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("login")
 public class LoginController {
     @Autowired
     private LoginService loginService;
 
     // 登录
-    @PostMapping
+    @PostMapping("/login")
     public ApiResult login(@RequestBody LoginParam loginParam){
         return loginService.login(loginParam);
     }
 
     //退出登录
-    @GetMapping("logout")
+    @GetMapping("/logout")
     public ApiResult logout(@RequestHeader("Authorization") String token){
         return loginService.logout(token);
     }
 
     //注册
-    @PostMapping("register")
+    @PostMapping("/register")
     public ApiResult register(@RequestBody LoginParam loginParam){
         return loginService.register(loginParam);
     }
 
-    //测试
-    @GetMapping("test")
-    public ApiResult logout(){
-        return ApiResult.success();
-    }
 }

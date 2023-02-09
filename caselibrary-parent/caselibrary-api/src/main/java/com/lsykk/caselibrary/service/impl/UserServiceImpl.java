@@ -1,26 +1,21 @@
 package com.lsykk.caselibrary.service.impl;
 
-import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lsykk.caselibrary.dao.mapper.UserMapper;
-import com.lsykk.caselibrary.dao.pojo.Case;
 import com.lsykk.caselibrary.dao.pojo.User;
 import com.lsykk.caselibrary.service.LoginService;
 import com.lsykk.caselibrary.service.UserService;
-import com.lsykk.caselibrary.utils.JWTUtils;
 import com.lsykk.caselibrary.vo.ApiResult;
 import com.lsykk.caselibrary.vo.ErrorCode;
 import com.lsykk.caselibrary.vo.LoginVo;
 import com.lsykk.caselibrary.vo.params.PageParams;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 
 @Service
@@ -60,7 +55,7 @@ public class UserServiceImpl implements UserService {
         queryWrapper.like(StringUtils.isNotBlank(user.getEmail()), User::getEmail, user.getEmail());
         queryWrapper.eq(user.getAuthority()!=null, User::getAuthority, user.getAuthority());
         /* 按照ID顺序排序 */
-        queryWrapper.orderByDesc(User::getId);
+        queryWrapper.orderByAsc(User::getId);
         Page<User> userPage = userMapper.selectPage(page, queryWrapper);
         List<User> userList = userPage.getRecords();
         return ApiResult.success(userList);
@@ -84,6 +79,8 @@ public class UserServiceImpl implements UserService {
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(User::getEmail, email);
         queryWrapper.eq(User::getPassword, password);
+        // 必须是启用状态的用户
+        queryWrapper.eq(User::getStatus, 1);
         queryWrapper.last("limit 1");
         return userMapper.selectOne(queryWrapper);
     }

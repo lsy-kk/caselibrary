@@ -13,11 +13,11 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/user")
 public class UserController {
     @Autowired
-    public UserService userService;
+    private UserService userService;
     @Autowired
-    public LoginService loginService;
+    private LoginService loginService;
 
-    @GetMapping("/getlist")
+    @GetMapping("/getList")
     public ApiResult getUserList(@RequestParam(defaultValue = "1") Integer page,
                                  @RequestParam(defaultValue = "10") Integer pageSize,
                                  @RequestParam(required = false)  Long id,
@@ -43,5 +43,10 @@ public class UserController {
     @PutMapping("/updatePassword")
     public ApiResult updatePassword(@RequestBody User user){
         return userService.updatePassword(user);
+    }
+
+    @GetMapping("/getUserByToken")
+    public ApiResult getUserByToken(@RequestParam String token){
+        return userService.findUserByToken(token);
     }
 }

@@ -19,6 +19,7 @@ public class TagServiceImpl implements TagService {
     @Autowired
     private TagMapper tagMapper;
 
+    @Override
     public ApiResult getTagList(PageParams pageParams, Tag tag){
         /* 分页查询 tag数据库表 */
         Page<Tag> page = new Page<>(pageParams.getPage(), pageParams.getPageSize());
@@ -33,10 +34,12 @@ public class TagServiceImpl implements TagService {
         return ApiResult.success(tagList);
     }
 
+    @Override
     public Tag findTagById(Long id){
         return tagMapper.selectById(id);
     }
 
+    @Override
     public ApiResult insertTag(Tag tag){
         if (StringUtils.isBlank(tag.getName())){
             return ApiResult.fail(ErrorCode.PARAMS_ERROR.getCode(), ErrorCode.PARAMS_ERROR.getMsg());
@@ -46,6 +49,7 @@ public class TagServiceImpl implements TagService {
         return ApiResult.success();
     }
 
+    @Override
     public ApiResult updateTag(Tag tag){
         if (tag.getId()==null || StringUtils.isBlank(tag.getName())){
             return ApiResult.fail(ErrorCode.PARAMS_ERROR.getCode(), ErrorCode.PARAMS_ERROR.getMsg());

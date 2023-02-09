@@ -49,4 +49,9 @@ public class UserController {
     public ApiResult getUserByToken(@RequestParam String token){
         return userService.findUserByToken(token);
     }
+
+    @GetMapping("/getUserById")
+    public ApiResult getUserById(@RequestParam Long id){
+        return ApiResult.success(userService.findUserById(id));
+    }
 }

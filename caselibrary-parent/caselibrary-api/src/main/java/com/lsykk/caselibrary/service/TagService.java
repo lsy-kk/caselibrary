@@ -2,7 +2,10 @@ package com.lsykk.caselibrary.service;
 
 import com.lsykk.caselibrary.dao.pojo.Tag;
 import com.lsykk.caselibrary.vo.ApiResult;
+import com.lsykk.caselibrary.vo.TagVo;
 import com.lsykk.caselibrary.vo.params.PageParams;
+
+import java.util.List;
 
 public interface TagService {
 
@@ -34,4 +37,11 @@ public interface TagService {
      * @return
      */
     ApiResult updateTag(Tag tag);
+
+    /**
+     * 根据案例id，找到其对应的所有标签
+     * @param caseId
+     * @return
+     */
+    List<TagVo> findTagsByCaseId(Long caseId);
 }

@@ -7,11 +7,14 @@ import com.lsykk.caselibrary.dao.pojo.Tag;
 import com.lsykk.caselibrary.service.TagService;
 import com.lsykk.caselibrary.vo.ApiResult;
 import com.lsykk.caselibrary.vo.ErrorCode;
+import com.lsykk.caselibrary.vo.TagVo;
 import com.lsykk.caselibrary.vo.params.PageParams;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -56,5 +59,25 @@ public class TagServiceImpl implements TagService {
         }
         tagMapper.updateById(tag);
         return ApiResult.success();
+    }
+
+    @Override
+    public List<TagVo> findTagsByCaseId(Long caseId){
+        List<Tag> list = tagMapper.findTagsByCaseId(caseId);
+        return copyList(list);
+    }
+
+    private List<TagVo> copyList(List<Tag> tagList){
+        List<TagVo> tagVoList = new ArrayList<>();
+        for (Tag tag : tagList) {
+            tagVoList.add(copy(tag));
+        }
+        return tagVoList;
+    }
+
+    private TagVo copy(Tag tag){
+        TagVo tagVo = new TagVo();
+        BeanUtils.copyProperties(tag, tagVo);
+        return tagVo;
     }
 }

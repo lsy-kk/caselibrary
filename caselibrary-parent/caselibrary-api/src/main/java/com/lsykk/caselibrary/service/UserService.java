@@ -80,5 +80,5 @@ public interface UserService {
      */
     void deleteUserById(Long id);
 
-    LoginVo transUserToLoginVo(User user);
+    LoginVo copy(User user);
 }

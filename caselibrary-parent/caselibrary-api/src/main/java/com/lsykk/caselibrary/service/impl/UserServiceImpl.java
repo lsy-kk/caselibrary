@@ -41,7 +41,7 @@ public class UserServiceImpl implements UserService {
         if (user == null){
             return ApiResult.fail(ErrorCode.TOKEN_ERROR.getCode(),ErrorCode.TOKEN_ERROR.getMsg());
         }
-        LoginVo loginVo = transUserToLoginVo(user);
+        LoginVo loginVo = copy(user);
         return ApiResult.success(loginVo);
     }
 
@@ -140,7 +140,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public LoginVo transUserToLoginVo(User user){
+    public LoginVo copy(User user){
         LoginVo loginVo = new LoginVo();
         loginVo.setId(user.getId());
         loginVo.setEmail(user.getEmail());

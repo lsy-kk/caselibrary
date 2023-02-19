@@ -37,4 +37,9 @@ public class ApiResult {
     public static ApiResult fail(String code, Object data){
         return new ApiResult(false, code, "fail", data);
     }
+
+    // 失败
+    public static ApiResult fail(ErrorCode errorCode){
+        return new ApiResult(false, errorCode.getCode(), "fail", errorCode.getMsg());
+    }
 }

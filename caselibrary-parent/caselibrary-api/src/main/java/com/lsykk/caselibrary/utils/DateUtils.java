@@ -6,12 +6,20 @@ import java.util.Date;
 
 public class DateUtils {
 
-    //指定时间格式
+    // 指定时间格式
     static DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+    // 另一种时间格式
+    static DateFormat dateFormatSimple = new SimpleDateFormat("yyyyMMdd");
 
-    //返回当前时间的指定字符串格式 yyyy/MM/dd HH:mm:ss
+    // 返回当前时间的指定字符串格式 yyyy/MM/dd HH:mm:ss
     public static String getTime(){
         String format = dateFormat.format(new Date());
+        return format;
+    }
+
+    // 返回当前时间的指定字符串格式 yyyyMMdd
+    public static String getTimeSimple(){
+        String format = dateFormatSimple.format(new Date());
         return format;
     }
 

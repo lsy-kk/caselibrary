@@ -2,19 +2,26 @@
 <!--MyBatis配置文件-->
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.lsykk.caselibrary.dao.mapper.CaseMapper">
+<mapper namespace="com.lsykk.caselibrary.dao.mapper.CaseHeaderMapper">
 
     <!-- IPage<CaseHeader> findCasesByFavoritesId(Long favoritesId);-->
     <select id="findCasesByFavoritesId" resultType="com.lsykk.caselibrary.dao.pojo.CaseHeader">
-        select * from case
+        select * from case_header
         where id in
         (select case_id from favorites_instance where favorites_id=#{favoritesId} and status = 1)
     </select>
 
     <!-- IPage<CaseHeader> findCasesByTagId(Long tagId);-->
     <select id="findCasesByTagId" resultType="com.lsykk.caselibrary.dao.pojo.CaseHeader">
-        select * from case
+        select * from case_header
         where id in
         (select case_id from case_tag where tag_id=#{tagId} and status = 1)
     </select>
+
+    <insert id="insertAndGetId"  parameterType="com.lsykk.caselibrary.dao.pojo.CaseHeader" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        insert into case_header
+        (title, summary, author_id, state, visible, status)
+        values(#{title}, #{summary}, #{authorId}, #{state}, #{visible}, #{status});
+    </insert>
+
 </mapper>

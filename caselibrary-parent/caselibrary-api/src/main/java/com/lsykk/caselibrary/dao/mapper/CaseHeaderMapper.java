@@ -4,7 +4,9 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lsykk.caselibrary.dao.pojo.CaseHeader;
+import org.apache.ibatis.annotations.Mapper;
 
+@Mapper
 public interface CaseHeaderMapper extends BaseMapper<CaseHeader> {
 
 
@@ -15,5 +17,5 @@ public interface CaseHeaderMapper extends BaseMapper<CaseHeader> {
     IPage<CaseHeader> findCasesByTagId(Page page, Long tagId);
 
     // 插入并获取主键
-    Long insertAndGetId(CaseHeader caseHeader);
+    int insertAndGetId(CaseHeader caseHeader);
 }

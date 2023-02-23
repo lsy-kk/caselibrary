@@ -14,8 +14,6 @@ public class CaseHeaderVo {
 
     private String summary;
 
-    private Long authorId;
-
     private Integer thumb;
 
     private Integer viewtimes;
@@ -28,10 +26,12 @@ public class CaseHeaderVo {
 
     private String updateTime;
 
-    // 额外的
+    // 额外的可选参数
     private CaseBodyVo caseBody;
 
-    private String authorName;
+    private List<CommentVo> comments;
+
+    private UserVo author;
 
     private List<TagVo> tags;
 }

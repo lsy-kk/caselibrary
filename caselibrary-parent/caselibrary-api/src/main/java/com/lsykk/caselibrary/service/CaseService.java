@@ -3,9 +3,13 @@ package com.lsykk.caselibrary.service;
 import com.lsykk.caselibrary.dao.pojo.CaseBody;
 import com.lsykk.caselibrary.dao.pojo.CaseHeader;
 import com.lsykk.caselibrary.vo.ApiResult;
+import com.lsykk.caselibrary.vo.CaseHeaderVo;
 import com.lsykk.caselibrary.vo.params.PageParams;
+import com.upyun.UpException;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 public interface CaseService {
@@ -15,15 +19,22 @@ public interface CaseService {
      * @param pageParams
      * @return
      */
-    ApiResult getCaseListAll(PageParams pageParams, Long id);
+    ApiResult getCaseListAll(PageParams pageParams, Long id, Long authorId,
+                             Integer visible, Integer state, Integer status);
 
     /**
-     * 获取管理员待审核/已打回案例列表
+     * 获取最近的案例
      * @param pageParams
-     * @param state
      * @return
      */
-    ApiResult getDealList(PageParams pageParams, Integer state);
+    //ApiResult getLatestList(PageParams pageParams);
+
+    /**
+     * 获取最热的案例
+     * @param pageParams
+     * @return
+     */
+    //ApiResult getHotList(PageParams pageParams);
 
     /**
      * 获取其他用户的案例列表
@@ -31,7 +42,7 @@ public interface CaseService {
      * @param userId
      * @return
      */
-    ApiResult getOtherAuthorList(PageParams pageParams, Long userId);
+    ApiResult getOtherAuthorList(PageParams pageParams, Long userId, boolean isBody, boolean isComment);
 
     /**
      * 获取自己的案例列表
@@ -40,8 +51,15 @@ public interface CaseService {
      * @param state
      * @return
      */
-    ApiResult getMyList(PageParams pageParams, Long userId, Integer state);
+    ApiResult getMyList(PageParams pageParams, Long userId, Integer state, boolean isBody, boolean isComment);
 
+    /**
+     * 案例关键字（title，summary）搜索，分页获取结果
+     * @param pageParams
+     * @param keyWords
+     * @return
+     */
+    ApiResult getSearchList(PageParams pageParams, String keyWords);
     /**
      * 根据id获取案例头部信息
      * @param id
@@ -62,6 +80,13 @@ public interface CaseService {
      * @return
      */
     ApiResult updateCaseHeader(CaseHeader newCaseHeader);
+
+    /**
+     * 根据id获取案例头部信息（VO）
+     * @param id
+     * @return
+     */
+    CaseHeaderVo getCaseHeaderVoById(Long id, boolean isBody, boolean isComment);
 
     /**
      * 根据收藏夹id，获取其中的案例
@@ -92,7 +117,14 @@ public interface CaseService {
     ApiResult getCaseBodyByCaseId(Long caseId);
 
     /**
-     * 更新casebody信息
+     * 更新casebody信息(提交功能)
+     * @param caseBody
+     * @return
+     */
+    ApiResult insertCaseBody(CaseBody caseBody);
+
+    /**
+     * 更新casebody信息（保存功能）
      * @param caseBody
      * @return
      */

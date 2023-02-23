@@ -4,9 +4,11 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
+import org.springframework.data.elasticsearch.annotations.Document;
 
 import java.util.Date;
 
+@Document(indexName = "caseheader")
 @TableName("case_header")
 @Data
 public class CaseHeader {

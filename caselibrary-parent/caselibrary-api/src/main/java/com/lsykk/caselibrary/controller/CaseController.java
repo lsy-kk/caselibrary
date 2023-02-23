@@ -26,19 +26,14 @@ public class CaseController {
     // 管理员，获取所有案例列表，支持id查询
     @GetMapping("getList")
     public ApiResult getCaseListAll(@RequestParam(defaultValue = "1") Integer page,
-                                 @RequestParam(defaultValue = "10") Integer pageSize,
-                                 @RequestParam(required = false) Long id) {
+                                    @RequestParam(defaultValue = "10") Integer pageSize,
+                                    @RequestParam(required = false) Long id,
+                                    @RequestParam(required = false) Long authorId,
+                                    @RequestParam(required = false) Integer visible,
+                                    @RequestParam(required = false) Integer state,
+                                    @RequestParam(required = false) Integer status) {
         PageParams pageParams = new PageParams(page, pageSize);
-        return caseService.getCaseListAll(pageParams, id);
-    }
-
-    // 管理员，获取待审批/被打回案例列表
-    @GetMapping("getDealList")
-    public ApiResult getDealList(@RequestParam(defaultValue = "1") Integer page,
-                                 @RequestParam(defaultValue = "10") Integer pageSize,
-                                 @RequestParam(defaultValue = "1") Integer state) {
-        PageParams pageParams = new PageParams(page, pageSize);
-        return caseService.getDealList(pageParams, state);
+        return caseService.getCaseListAll(pageParams, id, authorId, visible, state, status);
     }
 
     // 获取热度排序列表
@@ -49,17 +44,22 @@ public class CaseController {
 
     // 获取搜索关键字排序列表
     @GetMapping("getSearchList")
-    public ApiResult getSearchList(){
-        return ApiResult.success();
+    public ApiResult getSearchList(@RequestParam(defaultValue = "1") Integer page,
+                                   @RequestParam(defaultValue = "10") Integer pageSize,
+                                   @RequestParam(defaultValue = "") String keyword){
+        PageParams pageParams = new PageParams(page, pageSize);
+        return caseService.getSearchList(pageParams, keyword);
     }
 
     // 获取其他作者主页案例列表
     @GetMapping("getOtherAuthorList")
     public ApiResult getOtherAuthorList(@RequestParam(defaultValue = "1") Integer page,
                                         @RequestParam(defaultValue = "10") Integer pageSize,
-                                        @RequestParam(defaultValue = "10") Long userId){
+                                        @RequestParam(defaultValue = "10") Long userId,
+                                        @RequestParam(defaultValue = "false") boolean isBody,
+                                        @RequestParam(defaultValue = "false") boolean isComment){
         PageParams pageParams = new PageParams(page, pageSize);
-        return ApiResult.success(caseService.getOtherAuthorList(pageParams, userId));
+        return ApiResult.success(caseService.getOtherAuthorList(pageParams, userId, isBody, isComment));
     }
 
     // 获取个人主页案例列表
@@ -67,9 +67,11 @@ public class CaseController {
     public ApiResult getMyList(@RequestParam(defaultValue = "1") Integer page,
                                @RequestParam(defaultValue = "10") Integer pageSize,
                                @RequestParam Long userId,
-                               @RequestParam(defaultValue = "3") Integer state){
+                               @RequestParam(defaultValue = "3") Integer state,
+                               @RequestParam(defaultValue = "false") boolean isBody,
+                               @RequestParam(defaultValue = "false") boolean isComment){
         PageParams pageParams = new PageParams(page, pageSize);
-        return ApiResult.success(caseService.getMyList(pageParams, userId, state));
+        return ApiResult.success(caseService.getMyList(pageParams, userId, state, isBody, isComment));
     }
 
     @GetMapping("/getCasesByFavoritesId")
@@ -90,6 +92,13 @@ public class CaseController {
     @PostMapping("/updateCaseHeader")
     public ApiResult updateCaseHeader(@RequestBody CaseHeader caseHeader){
         return caseService.updateCaseHeader(caseHeader);
+    }
+
+    @GetMapping("/getCaseHeaderVo")
+    public ApiResult getCaseHeaderVo(@RequestParam Long caseId,
+                                     @RequestParam(defaultValue = "false") boolean isBody,
+                                     @RequestParam(defaultValue = "false") boolean isComment){
+        return ApiResult.success(caseService.getCaseHeaderVoById(caseId, isBody, isComment));
     }
 
     @PostMapping("/uploadFile")
@@ -130,6 +139,12 @@ public class CaseController {
     public ApiResult getCaseBodyByCaseId(@RequestParam Long caseId){
         return caseService.getCaseBodyByCaseId(caseId);
     }
+
+    @PostMapping("/insertCaseBody")
+    public ApiResult insertCaseBody(@RequestBody CaseBody caseBody){
+        return caseService.insertCaseBody(caseBody);
+    }
+
 
     @PostMapping("/updateCaseBody")
     public ApiResult updateCaseBody(@RequestBody CaseBody caseBody){

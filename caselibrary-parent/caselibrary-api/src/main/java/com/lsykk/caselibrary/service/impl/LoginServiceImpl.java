@@ -72,7 +72,8 @@ public class LoginServiceImpl implements LoginService {
         }
         User user = new User();
         user.setEmail(loginParam.getEmail());
-        user.setImage("");
+        // 默认头像
+        user.setImage("http://kkysl.free.svipss.top\\image\\default.jpg");
         user.setUsername(loginParam.getUsername());
         /* 密码需要加密保存 */
         user.setPassword(DigestUtils.md5Hex(loginParam.getPassword() + slat));

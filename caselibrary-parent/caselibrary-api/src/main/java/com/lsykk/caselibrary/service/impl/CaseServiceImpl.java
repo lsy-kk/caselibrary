@@ -58,8 +58,8 @@ public class CaseServiceImpl implements CaseService {
     private TagService tagService;
 
     @Override
-    public ApiResult getCaseListAll(PageParams pageParams, Long id, Long authorId,
-                                    Integer visible, Integer state, Integer status){
+    public ApiResult getCaseHeaderVoList(PageParams pageParams, Long id, Long authorId, Integer visible,
+                                    Integer state, Integer status, boolean isBody, boolean isComment){
         //分页查询 case数据库表
         Page<CaseHeader> page = new Page<>(pageParams.getPage(), pageParams.getPageSize());
         LambdaQueryWrapper<CaseHeader> queryWrapper = new LambdaQueryWrapper<>();
@@ -72,11 +72,11 @@ public class CaseServiceImpl implements CaseService {
             queryWrapper.eq(visible!=null, CaseHeader::getVisible, visible);
             queryWrapper.eq(authorId!=null, CaseHeader::getAuthorId, authorId);
         }
-        // 按照id排序
-        queryWrapper.orderByAsc(CaseHeader::getId);
+        // 按照id（即发布时间）倒叙排序
+        queryWrapper.orderByDesc(CaseHeader::getId);
         Page<CaseHeader> casePage = caseHeaderMapper.selectPage(page, queryWrapper);
         List<CaseHeader> caseHeaderList = casePage.getRecords();
-        return ApiResult.success(caseHeaderList);
+        return ApiResult.success(copyList(caseHeaderList, isBody, isComment));
     }
 
 

@@ -15,12 +15,19 @@ import java.util.List;
 public interface CaseService {
 
     /**
-     * 分页获取查找结果(可选id查询，管理员，status不限）
+     * 分页获取查找结果(可选的多种条件查询，管理员，status不限）
      * @param pageParams
+     * @param id
+     * @param authorId
+     * @param visible
+     * @param state
+     * @param status
+     * @param isBody
+     * @param isComment
      * @return
      */
-    ApiResult getCaseListAll(PageParams pageParams, Long id, Long authorId,
-                             Integer visible, Integer state, Integer status);
+    ApiResult getCaseHeaderVoList(PageParams pageParams, Long id, Long authorId, Integer visible,
+                                  Integer state, Integer status, boolean isBody, boolean isComment);
 
     /**
      * 获取最近的案例

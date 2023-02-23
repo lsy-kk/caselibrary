@@ -23,17 +23,19 @@ public class CaseController {
     @Autowired
     private CaseService caseService;
 
-    // 管理员，获取所有案例列表，支持id查询
-    @GetMapping("getList")
-    public ApiResult getCaseListAll(@RequestParam(defaultValue = "1") Integer page,
+    // 分页、根据条件获取所有案例Vo列表
+    @GetMapping("getCaseVoList")
+    public ApiResult getCaseVoList(@RequestParam(defaultValue = "1") Integer page,
                                     @RequestParam(defaultValue = "10") Integer pageSize,
                                     @RequestParam(required = false) Long id,
                                     @RequestParam(required = false) Long authorId,
                                     @RequestParam(required = false) Integer visible,
                                     @RequestParam(required = false) Integer state,
-                                    @RequestParam(required = false) Integer status) {
+                                    @RequestParam(required = false) Integer status,
+                                    @RequestParam(required = false) boolean isBody,
+                                    @RequestParam(required = false) boolean isComment) {
         PageParams pageParams = new PageParams(page, pageSize);
-        return caseService.getCaseListAll(pageParams, id, authorId, visible, state, status);
+        return caseService.getCaseHeaderVoList(pageParams, id, authorId, visible, state, status, isBody, isComment);
     }
 
     // 获取热度排序列表

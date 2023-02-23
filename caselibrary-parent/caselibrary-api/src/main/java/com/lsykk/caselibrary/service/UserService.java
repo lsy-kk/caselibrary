@@ -2,7 +2,7 @@ package com.lsykk.caselibrary.service;
 
 import com.lsykk.caselibrary.dao.pojo.User;
 import com.lsykk.caselibrary.vo.ApiResult;
-import com.lsykk.caselibrary.vo.LoginVo;
+import com.lsykk.caselibrary.vo.UserVo;
 import com.lsykk.caselibrary.vo.params.LoginParam;
 import com.lsykk.caselibrary.vo.params.PageParams;
 
@@ -28,6 +28,13 @@ public interface UserService {
      * @return
      */
     User findUserById(Long id);
+
+    /**
+     * 根据user_id查找用户vo
+     * @param id
+     * @return
+     */
+    UserVo findUserVoById(Long id);
 
     /**
      * 根据邮箱查找用户
@@ -80,5 +87,5 @@ public interface UserService {
      */
     void deleteUserById(Long id);
 
-    LoginVo copy(User user);
+    UserVo copy(User user);
 }

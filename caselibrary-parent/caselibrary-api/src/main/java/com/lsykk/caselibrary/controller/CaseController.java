@@ -24,7 +24,7 @@ public class CaseController {
     private CaseService caseService;
 
     // 分页、根据条件获取所有案例Vo列表
-    @GetMapping("getCaseVoList")
+    @GetMapping("/getCaseVoList")
     public ApiResult getCaseVoList(@RequestParam(defaultValue = "1") Integer page,
                                     @RequestParam(defaultValue = "10") Integer pageSize,
                                     @RequestParam(required = false) Long id,
@@ -32,20 +32,20 @@ public class CaseController {
                                     @RequestParam(required = false) Integer visible,
                                     @RequestParam(required = false) Integer state,
                                     @RequestParam(required = false) Integer status,
-                                    @RequestParam(required = false) boolean isBody,
-                                    @RequestParam(required = false) boolean isComment) {
+                                    @RequestParam(defaultValue = "false") boolean isBody,
+                                    @RequestParam(defaultValue = "false") boolean isComment) {
         PageParams pageParams = new PageParams(page, pageSize);
         return caseService.getCaseHeaderVoList(pageParams, id, authorId, visible, state, status, isBody, isComment);
     }
 
     // 获取热度排序列表
-    @GetMapping("getHotList")
+    @GetMapping("/getHotList")
     public ApiResult getHotList(){
         return ApiResult.success();
     }
 
     // 获取搜索关键字排序列表
-    @GetMapping("getSearchList")
+    @GetMapping("/getSearchList")
     public ApiResult getSearchList(@RequestParam(defaultValue = "1") Integer page,
                                    @RequestParam(defaultValue = "10") Integer pageSize,
                                    @RequestParam(defaultValue = "") String keyword){
@@ -54,7 +54,7 @@ public class CaseController {
     }
 
     // 获取其他作者主页案例列表
-    @GetMapping("getOtherAuthorList")
+    @GetMapping("/getOtherAuthorList")
     public ApiResult getOtherAuthorList(@RequestParam(defaultValue = "1") Integer page,
                                         @RequestParam(defaultValue = "10") Integer pageSize,
                                         @RequestParam(defaultValue = "10") Long userId,
@@ -69,17 +69,26 @@ public class CaseController {
     public ApiResult getMyList(@RequestParam(defaultValue = "1") Integer page,
                                @RequestParam(defaultValue = "10") Integer pageSize,
                                @RequestParam Long userId,
+                               @RequestParam(defaultValue = "1") Integer visible,
                                @RequestParam(defaultValue = "3") Integer state,
                                @RequestParam(defaultValue = "false") boolean isBody,
                                @RequestParam(defaultValue = "false") boolean isComment){
         PageParams pageParams = new PageParams(page, pageSize);
-        return ApiResult.success(caseService.getMyList(pageParams, userId, state, isBody, isComment));
+        return ApiResult.success(caseService.getMyList(pageParams, userId, visible, state, isBody, isComment));
     }
 
     @GetMapping("/getCasesByFavoritesId")
     public ApiResult getCasesByFavoritesId(@RequestParam Long favoritesId){
         return ApiResult.success(caseService.getCasesByFavoritesId(favoritesId));
     }
+
+    @GetMapping("/getCaseHeaderVo")
+    public ApiResult getCaseHeaderVo(@RequestParam Long caseId,
+                                     @RequestParam(defaultValue = "false") boolean isBody,
+                                     @RequestParam(defaultValue = "false") boolean isComment){
+        return ApiResult.success(caseService.getCaseHeaderVoById(caseId, isBody, isComment));
+    }
+
 
     @PostMapping("/insertCaseHeader")
     public ApiResult insertCaseHeader(@RequestBody CaseHeader caseHeader){
@@ -96,18 +105,26 @@ public class CaseController {
         return caseService.updateCaseHeader(caseHeader);
     }
 
-    @GetMapping("/getCaseHeaderVo")
-    public ApiResult getCaseHeaderVo(@RequestParam Long caseId,
-                                     @RequestParam(defaultValue = "false") boolean isBody,
-                                     @RequestParam(defaultValue = "false") boolean isComment){
-        return ApiResult.success(caseService.getCaseHeaderVoById(caseId, isBody, isComment));
+    @GetMapping("/getCaseBodyByCaseId")
+    public ApiResult getCaseBodyByCaseId(@RequestParam Long caseId){
+        return caseService.getCaseBodyByCaseId(caseId);
+    }
+
+    @PostMapping("/insertCaseBody")
+    public ApiResult insertCaseBody(@RequestBody CaseBody caseBody){
+        return caseService.insertCaseBody(caseBody);
+    }
+
+
+    @PostMapping("/updateCaseBody")
+    public ApiResult updateCaseBody(@RequestBody CaseBody caseBody){
+        return caseService.updateCaseBody(caseBody);
     }
 
     @PostMapping("/uploadFile")
     public ApiResult uploadFile(MultipartFile file){
         return caseService.uploadFile(file);
     }
-
 
     @GetMapping("/downloadFile")
     public void downloadFile(String filePath, HttpServletResponse response) throws Exception {
@@ -134,22 +151,5 @@ public class CaseController {
         out.write(bytes);
         out.close();
         in.close();
-    }
-
-
-    @GetMapping("/getCaseBodyByCaseId")
-    public ApiResult getCaseBodyByCaseId(@RequestParam Long caseId){
-        return caseService.getCaseBodyByCaseId(caseId);
-    }
-
-    @PostMapping("/insertCaseBody")
-    public ApiResult insertCaseBody(@RequestBody CaseBody caseBody){
-        return caseService.insertCaseBody(caseBody);
-    }
-
-
-    @PostMapping("/updateCaseBody")
-    public ApiResult updateCaseBody(@RequestBody CaseBody caseBody){
-        return caseService.updateCaseBody(caseBody);
     }
 }

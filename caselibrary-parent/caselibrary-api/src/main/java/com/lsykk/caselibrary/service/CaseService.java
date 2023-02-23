@@ -44,7 +44,7 @@ public interface CaseService {
     //ApiResult getHotList(PageParams pageParams);
 
     /**
-     * 获取其他用户的案例列表
+     * 获取其他用户的案例列表（visible=1，state=3，status=1）
      * @param pageParams
      * @param userId
      * @return
@@ -52,13 +52,14 @@ public interface CaseService {
     ApiResult getOtherAuthorList(PageParams pageParams, Long userId, boolean isBody, boolean isComment);
 
     /**
-     * 获取自己的案例列表
+     * 获取自己的案例列表（visible=0|1，state可选，status=1）
      * @param pageParams
      * @param userId
+     * @param visible
      * @param state
      * @return
      */
-    ApiResult getMyList(PageParams pageParams, Long userId, Integer state, boolean isBody, boolean isComment);
+    ApiResult getMyList(PageParams pageParams, Long userId, Integer visible, Integer state, boolean isBody, boolean isComment);
 
     /**
      * 案例关键字（title，summary）搜索，分页获取结果
@@ -67,6 +68,22 @@ public interface CaseService {
      * @return
      */
     ApiResult getSearchList(PageParams pageParams, String keyWords);
+
+
+    /**
+     * 根据id获取案例头部信息（VO）
+     * @param id
+     * @return
+     */
+    CaseHeaderVo getCaseHeaderVoById(Long id, boolean isBody, boolean isComment);
+
+    /**
+     * 根据收藏夹id，获取其中的案例
+     * @param favoritesId
+     * @return
+     */
+    List<CaseHeader> getCasesByFavoritesId(Long favoritesId);
+
     /**
      * 根据id获取案例头部信息
      * @param id
@@ -89,34 +106,6 @@ public interface CaseService {
     ApiResult updateCaseHeader(CaseHeader newCaseHeader);
 
     /**
-     * 根据id获取案例头部信息（VO）
-     * @param id
-     * @return
-     */
-    CaseHeaderVo getCaseHeaderVoById(Long id, boolean isBody, boolean isComment);
-
-    /**
-     * 根据收藏夹id，获取其中的案例
-     * @param favoritesId
-     * @return
-     */
-    List<CaseHeader> getCasesByFavoritesId(Long favoritesId);
-
-    /**
-     * 上传文件到服务器，返回文件路径
-     * @param file
-     * @return
-     */
-    ApiResult uploadFile(MultipartFile file);
-
-    /**
-     * 写content到md文件中，返回文件地址
-     * @param content
-     * @return
-     */
-    String exportMarkdownFile(String content);
-
-    /**
      * 根据caseId，获取当前版本号最新的CaseBody（面向案例内容编辑的功能）
      * @param caseId
      * @return
@@ -136,4 +125,18 @@ public interface CaseService {
      * @return
      */
     ApiResult updateCaseBody(CaseBody caseBody);
+
+    /**
+     * 上传文件到服务器，返回文件路径
+     * @param file
+     * @return
+     */
+    ApiResult uploadFile(MultipartFile file);
+
+    /**
+     * 写content到md文件中，返回文件地址
+     * @param content
+     * @return
+     */
+    String exportMarkdownFile(String content);
 }

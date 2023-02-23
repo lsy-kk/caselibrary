@@ -59,15 +59,15 @@ public class CaseServiceImpl implements CaseService {
 
     @Override
     public ApiResult getCaseHeaderVoList(PageParams pageParams, Long id, Long authorId, Integer visible,
-                                    Integer state, Integer status, boolean isBody, boolean isComment){
+                                         Integer state, Integer status, boolean isBody, boolean isComment){
         //分页查询 case数据库表
         Page<CaseHeader> page = new Page<>(pageParams.getPage(), pageParams.getPageSize());
         LambdaQueryWrapper<CaseHeader> queryWrapper = new LambdaQueryWrapper<>();
-        if (id!=null){
-            queryWrapper.eq(CaseHeader::getId, id);
+        if (id != null){
+            queryWrapper.eq(id!=null, CaseHeader::getId, id);
         }
         else {
-            queryWrapper.eq(status!=null, CaseHeader::getStatus,status);
+            queryWrapper.eq(status!=null, CaseHeader::getStatus, status);
             queryWrapper.eq(state!=null, CaseHeader::getState, state);
             queryWrapper.eq(visible!=null, CaseHeader::getVisible, visible);
             queryWrapper.eq(authorId!=null, CaseHeader::getAuthorId, authorId);
@@ -97,7 +97,7 @@ public class CaseServiceImpl implements CaseService {
     }
 
     @Override
-    public ApiResult getMyList(PageParams pageParams, Long userId, Integer state, boolean isBody, boolean isComment){
+    public ApiResult getMyList(PageParams pageParams, Long userId, Integer visible, Integer state, boolean isBody, boolean isComment){
         //分页查询 case数据库表
         Page<CaseHeader> page = new Page<>(pageParams.getPage(), pageParams.getPageSize());
         LambdaQueryWrapper<CaseHeader> queryWrapper = new LambdaQueryWrapper<>();
@@ -153,7 +153,19 @@ public class CaseServiceImpl implements CaseService {
             //放到实体类中
             caseHeaderList.add(searchHit.getContent());
         }
-        return ApiResult.success(caseHeaderList);
+        return ApiResult.success(copyList(caseHeaderList, false, false));
+    }
+
+    @Override
+    public List<CaseHeader> getCasesByFavoritesId(Long favoritesId){
+        //return caseHeaderMapper.findCasesByFavoritesId(favoritesId);
+        return null;
+    }
+
+    @Override
+    public CaseHeaderVo getCaseHeaderVoById(Long id, boolean isBody, boolean isComment){
+        CaseHeader caseHeader = getCaseHeaderById(id);
+        return copy(caseHeader, isBody, isComment);
     }
 
     @Override
@@ -187,15 +199,30 @@ public class CaseServiceImpl implements CaseService {
     }
 
     @Override
-    public List<CaseHeader> getCasesByFavoritesId(Long favoritesId){
-        //return caseHeaderMapper.findCasesByFavoritesId(favoritesId);
-        return null;
+    public ApiResult insertCaseBody(CaseBody caseBody){
+        if (caseBody.getCaseId() == null || caseBody.getVersion() == null){
+            return ApiResult.fail(ErrorCode.PARAMS_ERROR);
+        }
+        caseBody.setStatus(1);
+        // 前端记得version+1
+        caseBodyMapper.insert(caseBody);
+        return ApiResult.success();
     }
 
     @Override
-    public CaseHeaderVo getCaseHeaderVoById(Long id, boolean isBody, boolean isComment){
-        CaseHeader caseHeader = getCaseHeaderById(id);
-        return copy(caseHeader, isBody, isComment);
+    public ApiResult updateCaseBody(CaseBody caseBody){
+        if (caseBody.getCaseId() == null || caseBody.getVersion() == null){
+            return ApiResult.fail(ErrorCode.PARAMS_ERROR);
+        }
+        caseBody.setStatus(1);
+        caseBodyMapper.updateById(caseBody);
+        return ApiResult.success();
+    }
+
+    @Override
+    public ApiResult getCaseBodyByCaseId(Long caseId){
+        CaseBody caseBody = caseBodyMapper.findCaseBodyByCaseId(caseId);
+        return ApiResult.success(caseBody);
     }
 
     @Override
@@ -246,23 +273,6 @@ public class CaseServiceImpl implements CaseService {
             return ApiResult.success(url);
         }
         return ApiResult.fail(ErrorCode.File_Upload_Error);
-        // 以yyyyMMdd格式获取当前时间
-        // String format = DateUtils.getTimeSimple();
-        // 本地保存路径。默认定位到的当前用户目录("user.dir")（即工程根目录），为每一天创建一个文件夹
-        // String savePath = System.getProperty("user.dir") + "\\" + "files" + "\\" + format;
-        // 保存文件的文件夹
-        // File folder = new File(savePath);
-        // 判断文件夹是否存在，不存在则创建文件夹。若创建文件夹失败，返回失败信息。
-//        if (!folder.exists() && !folder.mkdirs()){
-//            ApiResult.fail(ErrorCode.File_Upload_Error);
-//        }
-//        try {
-//            file.transferTo(new File(folder, fileName));
-//            String filePath = savePath + "\\" + fileName;
-//            return ApiResult.success(filePath);
-//        } catch (IOException e){
-//            return ApiResult.fail(ErrorCode.File_Upload_Error);
-//        }
     }
 
     @Override
@@ -286,33 +296,6 @@ public class CaseServiceImpl implements CaseService {
             System.out.println("Error: " + exception.getMessage());
         }
         return filepath;
-    }
-
-    @Override
-    public ApiResult insertCaseBody(CaseBody caseBody){
-        if (caseBody.getCaseId() == null || caseBody.getVersion() == null){
-            return ApiResult.fail(ErrorCode.PARAMS_ERROR);
-        }
-        caseBody.setStatus(1);
-        // 前端记得version+1
-        caseBodyMapper.insert(caseBody);
-        return ApiResult.success();
-    }
-
-    @Override
-    public ApiResult updateCaseBody(CaseBody caseBody){
-        if (caseBody.getCaseId() == null || caseBody.getVersion() == null){
-            return ApiResult.fail(ErrorCode.PARAMS_ERROR);
-        }
-        caseBody.setStatus(1);
-        caseBodyMapper.updateById(caseBody);
-        return ApiResult.success();
-    }
-
-    @Override
-    public ApiResult getCaseBodyByCaseId(Long caseId){
-        CaseBody caseBody = caseBodyMapper.findCaseBodyByCaseId(caseId);
-        return ApiResult.success(caseBody);
     }
 
     private List<CaseHeaderVo> copyList(List<CaseHeader> list, boolean isBody, boolean isComment){

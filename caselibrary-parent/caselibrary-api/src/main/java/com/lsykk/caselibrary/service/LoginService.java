@@ -29,8 +29,7 @@ public interface LoginService {
 
     /**
      * 根据邮箱验证码登录
-     * @param email
-     * @param code
+     * @param loginParam
      * @return
      */
     ApiResult loginByEmailCode(LoginParam loginParam);

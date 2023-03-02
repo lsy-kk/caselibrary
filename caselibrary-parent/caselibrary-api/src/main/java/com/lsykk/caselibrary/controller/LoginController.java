@@ -23,6 +23,15 @@ public class LoginController {
         return loginService.logout(token);
     }
 
+    @PostMapping("/sendEmailCode")
+    public ApiResult sendEmailCode(@RequestBody LoginParam loginParam){
+        return loginService.sendVerifyMail(loginParam.getEmail());
+    }
+
+    @PostMapping("/loginByEmailCode")
+    public ApiResult loginByEmailCode(@RequestBody LoginParam loginParam){
+        return loginService.loginByEmailCode(loginParam);
+    }
     //注册
     @PostMapping("/register")
     public ApiResult register(@RequestBody LoginParam loginParam){

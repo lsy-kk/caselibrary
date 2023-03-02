@@ -21,6 +21,21 @@ public interface LoginService {
     ApiResult logout(String token);
 
     /**
+     * 向邮箱发送验证码
+     * @param email
+     * @return
+     */
+    ApiResult sendVerifyMail(String email);
+
+    /**
+     * 根据邮箱验证码登录
+     * @param email
+     * @param code
+     * @return
+     */
+    ApiResult loginByEmailCode(LoginParam loginParam);
+
+    /**
      * 注册账号
      * @param loginParam
      * @return

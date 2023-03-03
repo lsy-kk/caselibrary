@@ -7,6 +7,8 @@ import com.lsykk.caselibrary.vo.params.PageParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/tag")
 public class TagController {
@@ -25,6 +27,22 @@ public class TagController {
         tag.setName(name);
         return tagService.getTagList(pageParams, tag);
     }
+
+    @GetMapping("/getTagListByPrefix")
+    public ApiResult getTagListByPrefix(@RequestParam(required = false) String prefix){
+        return tagService.getTagListByPrefix(prefix);
+    }
+
+    @GetMapping("/findTagVoByCaseId")
+    public ApiResult findTagVoByCaseId(@RequestParam Long caseId){
+        return ApiResult.success(tagService.findTagVoByCaseId(caseId));
+    }
+
+    @PostMapping("/updateTagVoByCaseId")
+    public ApiResult updateTagVoByCaseId(List<Long> tagIds, Long caseId){
+        return ApiResult.success();
+    }
+
     @PostMapping("/insert")
     public ApiResult insert(@RequestBody Tag tag){
         return tagService.insertTag(tag);

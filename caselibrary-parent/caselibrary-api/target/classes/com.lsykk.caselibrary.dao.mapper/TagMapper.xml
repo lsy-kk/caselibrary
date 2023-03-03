@@ -6,8 +6,10 @@
 
     <!-- List<Tag> findTagsByCaseId(Long caseId);-->
     <select id="findTagsByCaseId" parameterType="long" resultType="com.lsykk.caselibrary.dao.pojo.Tag">
-        select *  from tag
+        select * from tag
         where id in
         (select tag_id from case_tag where case_id=#{caseId} and status = 1)
     </select>
+
+
 </mapper>

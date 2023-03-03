@@ -257,57 +257,6 @@ public class CaseServiceImpl implements CaseService {
     }
 
     @Override
-    public ApiResult insertCaseHeader(CaseHeader caseHeader){
-        if (StringUtils.isBlank(caseHeader.getTitle()) ||
-                caseHeader.getAuthorId() == null ||
-                caseHeader.getVisible() == null){
-            return ApiResult.fail(ErrorCode.PARAMS_ERROR);
-        }
-        caseHeader.setStatus(1);
-        caseHeaderMapper.insertAndGetId(caseHeader);
-        // ES
-        caseHeaderRepository.save(caseHeader);
-        // 返回当前caseheader的Id
-        return ApiResult.success(caseHeader.getId());
-    }
-
-    @Override
-    public ApiResult updateCaseHeader(CaseHeader caseHeader){
-        if (caseHeader.getId() == null){
-            return ApiResult.fail(ErrorCode.PARAMS_ERROR);
-        }
-        caseHeaderMapper.updateById(caseHeader);
-        caseHeaderRepository.save(caseHeader);
-        return ApiResult.success();
-    }
-
-    @Override
-    public ApiResult insertCaseBody(CaseBody caseBody){
-        if (caseBody.getCaseId() == null){
-            return ApiResult.fail(ErrorCode.PARAMS_ERROR);
-        }
-        caseBody.setStatus(1);
-        caseBodyMapper.insert(caseBody);
-        return ApiResult.success();
-    }
-
-    @Override
-    public ApiResult updateCaseBody(CaseBody caseBody){
-        if (caseBody.getCaseId() == null){
-            return ApiResult.fail(ErrorCode.PARAMS_ERROR);
-        }
-        caseBody.setStatus(1);
-        caseBodyMapper.updateById(caseBody);
-        return ApiResult.success();
-    }
-
-    @Override
-    public ApiResult getCaseBodyByCaseId(Long caseId){
-        CaseBody caseBody = caseBodyMapper.findCaseBodyByCaseId(caseId);
-        return ApiResult.success(caseBody);
-    }
-
-    @Override
     public ApiResult uploadFile(MultipartFile file) {
         // 获取文件原本的名字
         String originName = file.getOriginalFilename();

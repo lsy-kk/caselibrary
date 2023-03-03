@@ -107,41 +107,6 @@ public interface CaseService {
     CaseHeader getCaseHeaderById(Long id);
 
     /**
-     * 新增案例头
-     * @param newCaseHeader
-     * @return
-     */
-    ApiResult insertCaseHeader(CaseHeader newCaseHeader);
-
-    /**
-     * 更新案例头部信息
-     * @param newCaseHeader
-     * @return
-     */
-    ApiResult updateCaseHeader(CaseHeader newCaseHeader);
-
-    /**
-     * 根据caseId，获取当前版本号最新的CaseBody（面向案例内容编辑的功能）
-     * @param caseId
-     * @return
-     */
-    ApiResult getCaseBodyByCaseId(Long caseId);
-
-    /**
-     * 更新casebody信息(提交功能)
-     * @param caseBody
-     * @return
-     */
-    ApiResult insertCaseBody(CaseBody caseBody);
-
-    /**
-     * 更新casebody信息（保存功能）
-     * @param caseBody
-     * @return
-     */
-    ApiResult updateCaseBody(CaseBody caseBody);
-
-    /**
      * 上传文件到服务器，返回文件路径
      * @param file
      * @return

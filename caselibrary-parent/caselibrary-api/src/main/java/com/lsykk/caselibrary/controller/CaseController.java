@@ -101,37 +101,6 @@ public class CaseController {
         return caseService.getCaseParamById(caseId);
     }
 
-    @PostMapping("/insertCaseHeader")
-    public ApiResult insertCaseHeader(@RequestBody CaseHeader caseHeader){
-        return caseService.insertCaseHeader(caseHeader);
-    }
-
-    @GetMapping("/getCaseHeader")
-    public ApiResult getCaseHeader(@RequestParam Long caseId){
-        return ApiResult.success(caseService.getCaseHeaderById(caseId));
-    }
-
-    @PostMapping("/updateCaseHeader")
-    public ApiResult updateCaseHeader(@RequestBody CaseHeader caseHeader){
-        return caseService.updateCaseHeader(caseHeader);
-    }
-
-    @GetMapping("/getCaseBodyByCaseId")
-    public ApiResult getCaseBodyByCaseId(@RequestParam Long caseId){
-        return caseService.getCaseBodyByCaseId(caseId);
-    }
-
-    @PostMapping("/insertCaseBody")
-    public ApiResult insertCaseBody(@RequestBody CaseBody caseBody){
-        return caseService.insertCaseBody(caseBody);
-    }
-
-
-    @PostMapping("/updateCaseBody")
-    public ApiResult updateCaseBody(@RequestBody CaseBody caseBody){
-        return caseService.updateCaseBody(caseBody);
-    }
-
     @PostMapping("/uploadFile")
     public ApiResult uploadFile(MultipartFile file){
         return caseService.uploadFile(file);

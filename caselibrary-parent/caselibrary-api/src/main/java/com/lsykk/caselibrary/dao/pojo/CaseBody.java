@@ -21,6 +21,8 @@ public class CaseBody {
 
     private Integer version;
 
+    private Integer state;
+
     private Integer status;
 
     private Date createTime;

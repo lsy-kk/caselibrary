@@ -13,6 +13,10 @@ public class CaseBodyVo {
 
     private List<String> appendixList;
 
+    private Integer state;
+
+    private Integer version;
+
     private String createTime;
 
     private String updateTime;

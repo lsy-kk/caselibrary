@@ -9,6 +9,7 @@ public enum ErrorCode {
     EMAIL_CODE_ERROR("10005","验证码错误或已过期"),
     File_Upload_Error("20001","文件上传失败"),
     File_Upload_Illegal("20002","上传文件类型错误"),
+    DATABASE_INSERT_ERROR("20003","数据库插入失败"),
     CANNOT_FIND_DATA("30001","找不到数据"),
     CANNOT_SENT_EMAIL("30002","发送邮件失败"),
     NO_PERMISSION("70001","无访问权限"),

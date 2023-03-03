@@ -9,6 +9,7 @@
         where id in
         (select case_id from favorites_instance where favorites_id=#{favoritesId} and status = 1)
     </select>
+
     <!-- IPage<CaseHeader> findCasesByTagId(Long tagId);-->
     <select id="findCasesByTagId" resultType="com.lsykk.caselibrary.dao.pojo.CaseHeader">
         select * from case_header
@@ -17,8 +18,8 @@
     </select>
 
     <insert id="insertAndGetId" parameterType="com.lsykk.caselibrary.dao.pojo.CaseHeader" useGeneratedKeys="true" keyProperty="id" >
-        insert into case_header(title, summary, author_id, state, visible, status)
-        values (#{title}, #{summary}, #{authorId}, #{state}, #{visible}, #{status});
+        insert into case_header(title, summary, author_id, state, visible)
+        values (#{title}, #{summary}, #{authorId}, #{state}, #{visible});
     </insert>
 
 </mapper>

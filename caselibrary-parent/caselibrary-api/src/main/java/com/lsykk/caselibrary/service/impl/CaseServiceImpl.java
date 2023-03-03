@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lsykk.caselibrary.dao.mapper.CaseBodyMapper;
 import com.lsykk.caselibrary.dao.mapper.CaseHeaderMapper;
+import com.lsykk.caselibrary.dao.mapper.CaseTagMapper;
 import com.lsykk.caselibrary.dao.pojo.CaseHeader;
 import com.lsykk.caselibrary.dao.pojo.CaseBody;
 import com.lsykk.caselibrary.dao.repository.CaseHeaderRepository;
@@ -12,15 +13,11 @@ import com.lsykk.caselibrary.service.CaseService;
 import com.lsykk.caselibrary.service.TagService;
 import com.lsykk.caselibrary.service.UserService;
 import com.lsykk.caselibrary.utils.DateUtils;
-import com.lsykk.caselibrary.vo.ApiResult;
-import com.lsykk.caselibrary.vo.CaseBodyVo;
-import com.lsykk.caselibrary.vo.CaseHeaderVo;
-import com.lsykk.caselibrary.vo.ErrorCode;
+import com.lsykk.caselibrary.vo.*;
+import com.lsykk.caselibrary.vo.params.CaseParam;
 import com.lsykk.caselibrary.vo.params.PageParams;
-import com.upyun.UpException;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
@@ -38,8 +35,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class CaseServiceImpl implements CaseService {
@@ -53,6 +50,8 @@ public class CaseServiceImpl implements CaseService {
     @Autowired
     private CaseBodyMapper caseBodyMapper;
     @Autowired
+    private CaseTagMapper caseTagMapper;
+    @Autowired
     private UserService userService;
     @Autowired
     private TagService tagService;
@@ -64,7 +63,7 @@ public class CaseServiceImpl implements CaseService {
         Page<CaseHeader> page = new Page<>(pageParams.getPage(), pageParams.getPageSize());
         LambdaQueryWrapper<CaseHeader> queryWrapper = new LambdaQueryWrapper<>();
         if (id != null){
-            queryWrapper.eq(id!=null, CaseHeader::getId, id);
+            queryWrapper.eq(CaseHeader::getId, id);
         }
         else {
             queryWrapper.eq(status!=null, CaseHeader::getStatus, status);
@@ -163,6 +162,90 @@ public class CaseServiceImpl implements CaseService {
     }
 
     @Override
+    public ApiResult getCaseParamById(Long caseId){
+        CaseHeader caseHeader;
+        CaseBodyVo caseBodyVoLatest;
+        CaseBody caseBody = null;
+        List<Long> tags = new ArrayList<>();
+        if (caseId == null){
+            // 首次创建的情况，返回一个空的header,body 和 tags
+            // 这个逻辑前端做了
+            caseHeader = new CaseHeader();
+            caseHeader.setState(0);
+            caseBodyVoLatest = new CaseBodyVo();
+            caseBodyVoLatest.setState(0);
+            caseBodyVoLatest.setVersion(0);
+        }
+        else {
+            caseHeader = caseHeaderMapper.selectById(caseId);
+            CaseBody caseBodyLatest = caseBodyMapper.findCaseBodyLatestByCaseId(caseId);
+            caseBodyVoLatest = copy(caseBodyLatest);
+            if (caseBodyLatest.getState() == 0){
+                // 若最新的是草稿，额外提供最新的发布版本
+                caseBody = caseBodyMapper.findCaseBodyByCaseId(caseId);
+            }
+            List<TagVo> tagList = tagService.findTagVoByCaseId(caseId);
+            tags = tagList.stream()
+                    .map(TagVo::getId)
+                    .collect(Collectors.toList());
+        }
+        // 构建返回参数
+        CaseParam caseParam = new CaseParam();
+        caseParam.setCaseHeader(caseHeader);
+        caseParam.setCaseBodyVoLatest(caseBodyVoLatest);
+        caseParam.setCaseBodyVo(copy(caseBody));
+        caseParam.setOldTags(tags);
+        caseParam.setNewTags(tags);
+        return ApiResult.success(caseParam);
+    }
+
+    @Override
+    public ApiResult submitCaseParam(CaseParam caseParam){
+        // 前端设置好state
+        CaseHeader caseHeader = caseParam.getCaseHeader();
+        CaseBodyVo caseBodyVoLatest = caseParam.getCaseBodyVoLatest();
+        List<Long> oldTags = caseParam.getOldTags();
+        List<Long> newTags = caseParam.getNewTags();
+        // 检查参数
+        if (StringUtils.isBlank(caseHeader.getTitle()) ||
+                caseHeader.getAuthorId() == null ||
+                caseHeader.getVisible() == null ||
+                caseHeader.getState() == null ||
+                caseBodyVoLatest.getState() == null ||
+                caseBodyVoLatest.getVersion() == null){
+            return ApiResult.fail(ErrorCode.PARAMS_ERROR);
+        }
+        // header更新时间置为空
+        caseHeader.setUpdateTime(null);
+        // 首次发布的情况，先插入header
+        if (caseHeader.getId() == null){
+            caseHeaderMapper.insertAndGetId(caseHeader);
+            if (caseHeader.getId() == null){
+                return ApiResult.fail(ErrorCode.DATABASE_INSERT_ERROR);
+            }
+        }
+        else {
+            caseHeaderMapper.updateById(caseHeader);
+        }
+        // ElasticSearch保存
+        caseHeaderRepository.save(caseHeader);
+        // caseBodyVoLatest转caseBodyLatest，注意caseId
+        CaseBody caseBodyLatest = copyBack(caseBodyVoLatest, caseHeader.getId());
+        // 下面的更新是一整个事务
+        // 只有caseBodyLatest是需要更新的
+        if (caseBodyLatest.getId() == null){
+            caseBodyMapper.insert(caseBodyLatest);
+        }
+        else {
+            caseBodyMapper.updateById(caseBodyLatest);
+        }
+        // 最后是tag的添加
+        tagService.updateCaseTagByCaseId(oldTags, newTags, caseHeader.getId());
+        // 返回案例id
+        return ApiResult.success(caseHeader.getId());
+    }
+
+    @Override
     public CaseHeaderVo getCaseHeaderVoById(Long id, boolean isBody, boolean isComment){
         CaseHeader caseHeader = getCaseHeaderById(id);
         return copy(caseHeader, isBody, isComment);
@@ -200,18 +283,17 @@ public class CaseServiceImpl implements CaseService {
 
     @Override
     public ApiResult insertCaseBody(CaseBody caseBody){
-        if (caseBody.getCaseId() == null || caseBody.getVersion() == null){
+        if (caseBody.getCaseId() == null){
             return ApiResult.fail(ErrorCode.PARAMS_ERROR);
         }
         caseBody.setStatus(1);
-        // 前端记得version+1
         caseBodyMapper.insert(caseBody);
         return ApiResult.success();
     }
 
     @Override
     public ApiResult updateCaseBody(CaseBody caseBody){
-        if (caseBody.getCaseId() == null || caseBody.getVersion() == null){
+        if (caseBody.getCaseId() == null){
             return ApiResult.fail(ErrorCode.PARAMS_ERROR);
         }
         caseBody.setStatus(1);
@@ -252,7 +334,7 @@ public class CaseServiceImpl implements CaseService {
         }
         // 又拍云实例构造
         UpYun upYun = new UpYun("case-lib","kkysl", "Ms69o6Q8cI6spo8zscbu35ukL1z5nGI5");
-        String savePath = "";
+        String savePath;
         if (fileType.equals(".jpg") || fileType.equals(".png") || fileType.equals(".gif")){
             // 使用唯一的UUID作为图片名称
             savePath = "images/" + UUID.randomUUID() + fileType;
@@ -327,13 +409,44 @@ public class CaseServiceImpl implements CaseService {
         return copy(caseBody);
     }
 
+    private List<CaseBodyVo> copyList(List<CaseBody> list){
+        List<CaseBodyVo> caseBodyVoList = new ArrayList<>();
+        for (CaseBody caseBody : list) {
+            caseBodyVoList.add(copy(caseBody));
+        }
+        return caseBodyVoList;
+    }
+
     private CaseBodyVo copy(CaseBody caseBody){
+        if (caseBody == null){
+            return null;
+        }
         CaseBodyVo caseBodyVo = new CaseBodyVo();
         BeanUtils.copyProperties(caseBody, caseBodyVo);
-        List<String> list = Arrays.asList(caseBody.getAppendix().split(";"));
+        if (StringUtils.isNotBlank(caseBody.getAppendix())){
+            List<String> list = Arrays.asList(caseBody.getAppendix().split(";"));
+            caseBodyVo.setAppendixList(list);
+        }
+        else {
+            caseBodyVo.setAppendixList(null);
+        }
         caseBodyVo.setCreateTime(DateUtils.getTime(caseBody.getCreateTime()));
         caseBodyVo.setUpdateTime(DateUtils.getTime(caseBody.getUpdateTime()));
-        caseBodyVo.setAppendixList(list);
+
         return caseBodyVo;
+    }
+
+    private CaseBody copyBack(CaseBodyVo caseBodyVo, Long caseId){
+        if (caseBodyVo == null){
+            return null;
+        }
+        CaseBody caseBody = new CaseBody();
+        BeanUtils.copyProperties(caseBodyVo, caseBody);
+        List<String> list = caseBodyVo.getAppendixList();
+        caseBody.setCaseId(caseId);
+        caseBody.setAppendix(String.join(";", list));
+        caseBody.setStatus(1);
+        // 不需要处理time，这个会自动更新
+        return caseBody;
     }
 }

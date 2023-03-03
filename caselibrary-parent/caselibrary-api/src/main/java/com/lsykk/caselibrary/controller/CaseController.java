@@ -5,6 +5,7 @@ import com.lsykk.caselibrary.dao.pojo.CaseHeader;
 import com.lsykk.caselibrary.service.CaseService;
 import com.lsykk.caselibrary.vo.ApiResult;
 import com.lsykk.caselibrary.vo.CaseBodyVo;
+import com.lsykk.caselibrary.vo.params.CaseParam;
 import com.lsykk.caselibrary.vo.params.PageParams;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,6 +91,16 @@ public class CaseController {
     }
 
 
+    @PostMapping("/submitCaseParam")
+    public ApiResult submitCaseParam(@RequestBody CaseParam caseParam){
+        return caseService.submitCaseParam(caseParam);
+    }
+
+    @GetMapping("/getCaseParam")
+    public ApiResult getCaseParam(@RequestParam(required = false) Long caseId){
+        return caseService.getCaseParamById(caseId);
+    }
+
     @PostMapping("/insertCaseHeader")
     public ApiResult insertCaseHeader(@RequestBody CaseHeader caseHeader){
         return caseService.insertCaseHeader(caseHeader);
@@ -140,8 +151,8 @@ public class CaseController {
     }
 
     @PostMapping("/exportMarkdownFile")
-    public void exportMarkdownFile(@RequestBody CaseBody caseBody, HttpServletResponse response) throws Exception {
-        String filePath = caseService.exportMarkdownFile(caseBody.getContent());
+    public void exportMarkdownFile(@RequestBody CaseBodyVo caseBodyVo, HttpServletResponse response) throws Exception {
+        String filePath = caseService.exportMarkdownFile(caseBodyVo.getContent());
         FileInputStream in = new FileInputStream(filePath);
         byte[] bytes = IOUtils.toByteArray(in);
         response.setContentType("application/force-download");

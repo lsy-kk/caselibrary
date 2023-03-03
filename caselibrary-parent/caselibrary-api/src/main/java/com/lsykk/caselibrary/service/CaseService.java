@@ -4,6 +4,7 @@ import com.lsykk.caselibrary.dao.pojo.CaseBody;
 import com.lsykk.caselibrary.dao.pojo.CaseHeader;
 import com.lsykk.caselibrary.vo.ApiResult;
 import com.lsykk.caselibrary.vo.CaseHeaderVo;
+import com.lsykk.caselibrary.vo.params.CaseParam;
 import com.lsykk.caselibrary.vo.params.PageParams;
 import com.upyun.UpException;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -83,6 +84,20 @@ public interface CaseService {
      * @return
      */
     List<CaseHeader> getCasesByFavoritesId(Long favoritesId);
+
+    /**
+     * 根据id获取案例param（header, body和 case_tag）
+     * @param caseId
+     * @return
+     */
+    ApiResult getCaseParamById(Long caseId);
+
+    /**
+     * 提交案例，更新案例param（header, body和 case_tag）
+     * @param caseParam)
+     * @return
+     */
+    ApiResult submitCaseParam(CaseParam caseParam);
 
     /**
      * 根据id获取案例头部信息

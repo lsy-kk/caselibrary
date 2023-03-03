@@ -8,6 +8,13 @@
     <select id="findCaseBodyByCaseId" parameterType="long" resultType="com.lsykk.caselibrary.dao.pojo.CaseBody">
         select * from case_body
         where case_id=#{caseId} and status = 1 and version in
+        (select max(version) from case_body where case_id=#{caseId} and state=1 and status = 1)
+    </select>
+
+    <!-- CaseBody findCaseBodyLatestByCaseId(Long caseId);-->
+    <select id="findCaseBodyLatestByCaseId" parameterType="long" resultType="com.lsykk.caselibrary.dao.pojo.CaseBody">
+        select * from case_body
+        where case_id=#{caseId} and status = 1 and version in
         (select max(version) from case_body where case_id=#{caseId} and status = 1)
     </select>
 </mapper>

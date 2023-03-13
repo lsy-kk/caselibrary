@@ -1,6 +1,5 @@
 package com.lsykk.caselibrary.service.impl;
 
-import com.UpYun;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lsykk.caselibrary.dao.mapper.CaseBodyMapper;
@@ -10,6 +9,7 @@ import com.lsykk.caselibrary.dao.pojo.CaseHeader;
 import com.lsykk.caselibrary.dao.pojo.CaseBody;
 import com.lsykk.caselibrary.dao.repository.CaseHeaderRepository;
 import com.lsykk.caselibrary.service.CaseService;
+import com.lsykk.caselibrary.service.FileService;
 import com.lsykk.caselibrary.service.TagService;
 import com.lsykk.caselibrary.service.UserService;
 import com.lsykk.caselibrary.utils.DateUtils;
@@ -31,10 +31,7 @@ import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -55,6 +52,8 @@ public class CaseServiceImpl implements CaseService {
     private UserService userService;
     @Autowired
     private TagService tagService;
+    @Autowired
+    private FileService fileService;
 
     @Override
     public ApiResult getCaseHeaderVoList(PageParams pageParams, Long id, Long authorId, Integer visible,
@@ -256,79 +255,6 @@ public class CaseServiceImpl implements CaseService {
         return caseHeaderMapper.selectById(id);
     }
 
-    @Override
-    public ApiResult uploadFile(MultipartFile file) {
-        // 获取文件原本的名字
-        String originName = file.getOriginalFilename();
-        if (StringUtils.isBlank(originName)){
-            // 上传的文件类型错误
-            return ApiResult.fail(ErrorCode.File_Upload_Illegal);
-        }
-        // set保存可接受的文件类型（后缀）
-        Set<String> set = new HashSet<>();
-        set.add(".pdf");
-        set.add(".doc");
-        set.add(".docx");
-        set.add(".ppt");
-        set.add(".rar");
-        set.add(".zip");
-        set.add(".gif");
-        set.add(".jpg");
-        set.add(".png");
-        // 获取文件后缀("."以及后面的内容)
-        String fileType = originName.substring(originName.lastIndexOf("."));
-        if (!set.contains(fileType)){
-            // 上传的文件类型错误
-            return ApiResult.fail(ErrorCode.File_Upload_Illegal);
-        }
-        // 又拍云实例构造
-        UpYun upYun = new UpYun("case-lib","kkysl", "Ms69o6Q8cI6spo8zscbu35ukL1z5nGI5");
-        String savePath;
-        if (fileType.equals(".jpg") || fileType.equals(".png") || fileType.equals(".gif")){
-            // 使用唯一的UUID作为图片名称
-            savePath = "images/" + UUID.randomUUID() + fileType;
-        }
-        else {
-            // 若不是图片，使用原本的名称，保存在UUID收藏夹中
-            savePath = "files/" + UUID.randomUUID() + "/" + originName;
-        }
-        boolean res = false;
-        try {
-            res = upYun.writeFile(savePath, file.getBytes(), false);
-        } catch (Exception e) {
-            e.printStackTrace();
-            ApiResult.fail(ErrorCode.File_Upload_Error);
-        }
-        if (res){
-            String url = "http://case-lib.test.upcdn.net/" + savePath;
-            return ApiResult.success(url);
-        }
-        return ApiResult.fail(ErrorCode.File_Upload_Error);
-    }
-
-    @Override
-    public String exportMarkdownFile(String content) {
-        // 以yyyyMMdd格式获取当前时间
-        String format = DateUtils.getTimeSimple();
-        String fileName = UUID.randomUUID() + "-" + format + ".md";
-        // 保存路径。默认定位到的当前用户目录("user.dir")（即工程根目录），为每一天创建一个文件夹
-        String savePath = System.getProperty("user.dir") + "\\" + "files" + "\\" + "markdown";
-        // 保存文件的文件夹
-        File folder = new File(savePath);
-        // 判断文件夹是否存在，不存在则创建文件夹。若创建文件夹失败，返回失败信息。
-        if (!folder.exists() && !folder.mkdirs()){
-            ApiResult.fail(ErrorCode.File_Upload_Error);
-        }
-        String filepath = savePath + "\\" + fileName;
-        try (FileWriter fileWriter = new FileWriter(filepath)) {
-            fileWriter.write(content);
-        }
-        catch (Exception exception){
-            System.out.println("Error: " + exception.getMessage());
-        }
-        return filepath;
-    }
-
     private List<CaseHeaderVo> copyList(List<CaseHeader> list, boolean isBody, boolean isComment){
         List<CaseHeaderVo> caseHeaderVoList = new ArrayList<>();
         for (CaseHeader caseHeader : list) {
@@ -372,16 +298,9 @@ public class CaseServiceImpl implements CaseService {
         }
         CaseBodyVo caseBodyVo = new CaseBodyVo();
         BeanUtils.copyProperties(caseBody, caseBodyVo);
-        if (StringUtils.isNotBlank(caseBody.getAppendix())){
-            List<String> list = Arrays.asList(caseBody.getAppendix().split(";"));
-            caseBodyVo.setAppendixList(list);
-        }
-        else {
-            caseBodyVo.setAppendixList(null);
-        }
+        caseBodyVo.setAppendixList(fileService.getFileVoByString(caseBody.getAppendix()));
         caseBodyVo.setCreateTime(DateUtils.getTime(caseBody.getCreateTime()));
         caseBodyVo.setUpdateTime(DateUtils.getTime(caseBody.getUpdateTime()));
-
         return caseBodyVo;
     }
 
@@ -391,7 +310,10 @@ public class CaseServiceImpl implements CaseService {
         }
         CaseBody caseBody = new CaseBody();
         BeanUtils.copyProperties(caseBodyVo, caseBody);
-        List<String> list = caseBodyVo.getAppendixList();
+        List<String> list = caseBodyVo.getAppendixList()
+                .stream()
+                .map(FileVo::getUrl)
+                .collect(Collectors.toList());
         caseBody.setCaseId(caseId);
         caseBody.setAppendix(String.join(";", list));
         caseBody.setStatus(1);

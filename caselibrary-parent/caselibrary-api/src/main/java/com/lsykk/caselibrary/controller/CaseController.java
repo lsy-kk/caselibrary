@@ -100,36 +100,4 @@ public class CaseController {
     public ApiResult getCaseParam(@RequestParam(required = false) Long caseId){
         return caseService.getCaseParamById(caseId);
     }
-
-    @PostMapping("/uploadFile")
-    public ApiResult uploadFile(MultipartFile file){
-        return caseService.uploadFile(file);
-    }
-
-    @GetMapping("/downloadFile")
-    public void downloadFile(String filePath, HttpServletResponse response) throws Exception {
-        FileInputStream in = new FileInputStream(filePath);
-        byte[] bytes = IOUtils.toByteArray(in);
-        response.setContentType("application/force-download");
-        response.setContentLength(bytes.length);
-        response.setHeader("Content-Disposition", "attachment;filename=result");
-        ServletOutputStream out = response.getOutputStream();
-        out.write(bytes);
-        out.close();
-        in.close();
-    }
-
-    @PostMapping("/exportMarkdownFile")
-    public void exportMarkdownFile(@RequestBody CaseBodyVo caseBodyVo, HttpServletResponse response) throws Exception {
-        String filePath = caseService.exportMarkdownFile(caseBodyVo.getContent());
-        FileInputStream in = new FileInputStream(filePath);
-        byte[] bytes = IOUtils.toByteArray(in);
-        response.setContentType("application/force-download");
-        response.setContentLength(bytes.length);
-        response.setHeader("Content-Disposition", "attachment;filename=result");
-        ServletOutputStream out = response.getOutputStream();
-        out.write(bytes);
-        out.close();
-        in.close();
-    }
 }

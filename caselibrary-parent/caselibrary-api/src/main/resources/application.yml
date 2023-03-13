@@ -21,6 +21,8 @@ spring:
     ip: 127.0.0.1
     port: 9200
     pool: 5
+    repositories:
+      enable: true
     cluster:
       name: my-application
   http:

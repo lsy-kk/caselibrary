@@ -1,16 +1,12 @@
 package com.lsykk.caselibrary.service;
 
-import com.lsykk.caselibrary.dao.pojo.CaseBody;
 import com.lsykk.caselibrary.dao.pojo.CaseHeader;
 import com.lsykk.caselibrary.vo.ApiResult;
 import com.lsykk.caselibrary.vo.CaseHeaderVo;
 import com.lsykk.caselibrary.vo.params.CaseParam;
 import com.lsykk.caselibrary.vo.params.PageParams;
-import com.upyun.UpException;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 
 public interface CaseService {
@@ -106,17 +102,4 @@ public interface CaseService {
      */
     CaseHeader getCaseHeaderById(Long id);
 
-    /**
-     * 上传文件到服务器，返回文件路径
-     * @param file
-     * @return
-     */
-    ApiResult uploadFile(MultipartFile file);
-
-    /**
-     * 写content到md文件中，返回文件地址
-     * @param content
-     * @return
-     */
-    String exportMarkdownFile(String content);
 }

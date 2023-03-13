@@ -1,11 +1,10 @@
-package com.lsykk.caselibrary.vo;
+package com.lsykk.caselibrary.vo.params;
 
-import lombok.Data;
+import com.lsykk.caselibrary.vo.FileVo;
 
 import java.util.List;
 
-@Data
-public class CaseBodyVo {
+public class CaseBodyParam {
 
     private Long id;
 
@@ -16,8 +15,4 @@ public class CaseBodyVo {
     private Integer state;
 
     private Integer version;
-
-    private String createTime;
-
-    private String updateTime;
 }

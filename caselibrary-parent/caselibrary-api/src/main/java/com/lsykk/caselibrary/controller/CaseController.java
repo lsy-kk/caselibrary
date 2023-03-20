@@ -66,7 +66,7 @@ public class CaseController {
     }
 
     // 获取个人主页案例列表
-    @GetMapping("getMyList")
+    @GetMapping("/getMyList")
     public ApiResult getMyList(@RequestParam(defaultValue = "1") Integer page,
                                @RequestParam(defaultValue = "10") Integer pageSize,
                                @RequestParam Long userId,

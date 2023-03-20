@@ -1,5 +1,6 @@
 package com.lsykk.caselibrary.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lsykk.caselibrary.dao.mapper.CaseBodyMapper;
@@ -8,10 +9,7 @@ import com.lsykk.caselibrary.dao.mapper.CaseTagMapper;
 import com.lsykk.caselibrary.dao.pojo.CaseHeader;
 import com.lsykk.caselibrary.dao.pojo.CaseBody;
 import com.lsykk.caselibrary.dao.repository.CaseHeaderRepository;
-import com.lsykk.caselibrary.service.CaseService;
-import com.lsykk.caselibrary.service.FileService;
-import com.lsykk.caselibrary.service.TagService;
-import com.lsykk.caselibrary.service.UserService;
+import com.lsykk.caselibrary.service.*;
 import com.lsykk.caselibrary.utils.DateUtils;
 import com.lsykk.caselibrary.vo.*;
 import com.lsykk.caselibrary.vo.params.CaseParam;
@@ -30,14 +28,18 @@ import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
 public class CaseServiceImpl implements CaseService {
 
+    @Autowired
+    private RedisTemplate<String,String> redisTemplate;
     @Autowired
     private CaseHeaderRepository caseHeaderRepository;
     @Autowired
@@ -54,6 +56,8 @@ public class CaseServiceImpl implements CaseService {
     private TagService tagService;
     @Autowired
     private FileService fileService;
+    @Autowired
+    private CommentService commentService;
 
     @Override
     public ApiResult getCaseHeaderVoList(PageParams pageParams, Long id, Long authorId, Integer visible,
@@ -246,8 +250,16 @@ public class CaseServiceImpl implements CaseService {
 
     @Override
     public CaseHeaderVo getCaseHeaderVoById(Long id, boolean isBody, boolean isComment){
+        // 加一层redis缓存
+//        String caseJson = redisTemplate.opsForValue().get("CaseVo_" + id + "_Body_" + isBody + "_Comment_" + isComment);
+//        if (StringUtils.isNotBlank(caseJson)){
+//            return JSON.parseObject(caseJson, CaseHeaderVo.class);
+//        }
         CaseHeader caseHeader = getCaseHeaderById(id);
-        return copy(caseHeader, isBody, isComment);
+        CaseHeaderVo caseHeaderVo = copy(caseHeader, isBody, isComment);
+//        redisTemplate.opsForValue().set("CaseVo_" + id + "_Body_" + isBody + "_Comment_" + isComment,
+//                JSON.toJSONString(caseHeaderVo), 1, TimeUnit.HOURS);
+        return caseHeaderVo;
     }
 
     @Override
@@ -272,7 +284,7 @@ public class CaseServiceImpl implements CaseService {
             caseHeaderVo.setCaseBody(findCaseBodyById(caseHeader.getId()));
         }
         if (isComment){
-            //caseHeaderVo.setCaseBody(findCaseBodyById(caseHeader.getId()));
+            caseHeaderVo.setComments(commentService.getCommentVoListByCaseId(caseHeader.getId()));
         }
         caseHeaderVo.setAuthor(userService.findUserVoById(caseHeader.getAuthorId()));
         caseHeaderVo.setTags(tagService.findTagVoByCaseId(caseHeader.getId()));

@@ -279,8 +279,10 @@ public class CaseServiceImpl implements CaseService {
     private CaseHeaderVo copy(CaseHeader caseHeader, boolean isBody, boolean isComment){
         CaseHeaderVo caseHeaderVo = new CaseHeaderVo();
         BeanUtils.copyProperties(caseHeader, caseHeaderVo);
-        caseHeaderVo.setCreateTime(DateUtils.getTime(caseHeader.getCreateTime()));
-        caseHeaderVo.setUpdateTime(DateUtils.getTime(caseHeader.getUpdateTime()));
+        if (caseHeader.getCreateTime() != null && caseHeader.getUpdateTime() != null){
+            caseHeaderVo.setCreateTime(DateUtils.getTime(caseHeader.getCreateTime()));
+            caseHeaderVo.setUpdateTime(DateUtils.getTime(caseHeader.getUpdateTime()));
+        }
         if (isBody){
             caseHeaderVo.setCaseBody(findCaseBodyById(caseHeader.getId()));
         }
@@ -312,8 +314,10 @@ public class CaseServiceImpl implements CaseService {
         CaseBodyVo caseBodyVo = new CaseBodyVo();
         BeanUtils.copyProperties(caseBody, caseBodyVo);
         caseBodyVo.setAppendixList(fileService.getFileVoByString(caseBody.getAppendix()));
-        caseBodyVo.setCreateTime(DateUtils.getTime(caseBody.getCreateTime()));
-        caseBodyVo.setUpdateTime(DateUtils.getTime(caseBody.getUpdateTime()));
+        if (caseBody.getCreateTime() != null && caseBody.getUpdateTime() != null){
+            caseBodyVo.setCreateTime(DateUtils.getTime(caseBody.getCreateTime()));
+            caseBodyVo.setUpdateTime(DateUtils.getTime(caseBody.getUpdateTime()));
+        }
         return caseBodyVo;
     }
 

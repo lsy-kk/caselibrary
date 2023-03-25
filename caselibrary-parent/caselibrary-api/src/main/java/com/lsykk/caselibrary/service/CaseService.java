@@ -41,7 +41,7 @@ public interface CaseService {
     //ApiResult getHotList(PageParams pageParams);
 
     /**
-     * 获取其他用户的案例列表（visible=1，state=3，status=1）
+     * 获取其他用户的案例列表（visible=1，state=1，status=1）
      * @param pageParams
      * @param userId
      * @return

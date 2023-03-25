@@ -16,13 +16,16 @@ import com.lsykk.caselibrary.vo.params.CaseParam;
 import com.lsykk.caselibrary.vo.params.PageParams;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
@@ -40,6 +43,8 @@ public class CaseServiceImpl implements CaseService {
 
     @Autowired
     private RedisTemplate<String,String> redisTemplate;
+    @Autowired
+    private ThreadService threadService;
     @Autowired
     private CaseHeaderRepository caseHeaderRepository;
     @Autowired
@@ -77,8 +82,10 @@ public class CaseServiceImpl implements CaseService {
         // 按照id（即发布时间）倒叙排序
         queryWrapper.orderByDesc(CaseHeader::getId);
         Page<CaseHeader> casePage = caseHeaderMapper.selectPage(page, queryWrapper);
-        List<CaseHeader> caseHeaderList = casePage.getRecords();
-        return ApiResult.success(copyList(caseHeaderList, isBody, isComment));
+        PageVo<CaseHeaderVo> pageVo = new PageVo();
+        pageVo.setRecordList(copyList(casePage.getRecords(), isBody, isComment));
+        pageVo.setTotal(casePage.getTotal());
+        return ApiResult.success(pageVo);
     }
 
 
@@ -88,7 +95,7 @@ public class CaseServiceImpl implements CaseService {
         Page<CaseHeader> page = new Page<>(pageParams.getPage(), pageParams.getPageSize());
         LambdaQueryWrapper<CaseHeader> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(CaseHeader::getStatus, 1);
-        queryWrapper.eq(CaseHeader::getState, 3);
+        queryWrapper.eq(CaseHeader::getState, 1);
         queryWrapper.eq(CaseHeader::getVisible, 1);
         queryWrapper.eq(userId!=null, CaseHeader::getAuthorId, userId);
         // 按照id倒序排序
@@ -116,18 +123,18 @@ public class CaseServiceImpl implements CaseService {
     @Override
     public ApiResult getSearchList(PageParams pageParams, String keyWords){
         // 查询条件
-        BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery()
+        QueryBuilder queryBuilder = QueryBuilders.boolQuery()
                 .should(QueryBuilders.matchQuery("title", keyWords))
                 .should(QueryBuilders.matchQuery("summary", keyWords))
                 .filter(QueryBuilders.termQuery("visible",1))
-                .filter(QueryBuilders.termQuery("state",3))
+                .filter(QueryBuilders.termQuery("state",1))
                 .filter(QueryBuilders.termQuery("status",1));
         //查询构建器
         NativeSearchQuery searchQuery = new NativeSearchQueryBuilder()
                 // 分页设置
-                .withPageable(PageRequest.of(pageParams.getPage(),pageParams.getPageSize()))
+                .withPageable(PageRequest.of(pageParams.getPage()-1, pageParams.getPageSize()))
                 // 日期倒排
-                .withSort(SortBuilders.fieldSort("updateTime").order(SortOrder.DESC))
+                //.withSort(SortBuilders.fieldSort("updateTime").order(SortOrder.DESC))
                 // 查询条件
                 .withQuery(queryBuilder)
                 // 添加高亮显示字段
@@ -250,15 +257,9 @@ public class CaseServiceImpl implements CaseService {
 
     @Override
     public CaseHeaderVo getCaseHeaderVoById(Long id, boolean isBody, boolean isComment){
-        // 加一层redis缓存
-//        String caseJson = redisTemplate.opsForValue().get("CaseVo_" + id + "_Body_" + isBody + "_Comment_" + isComment);
-//        if (StringUtils.isNotBlank(caseJson)){
-//            return JSON.parseObject(caseJson, CaseHeaderVo.class);
-//        }
         CaseHeader caseHeader = getCaseHeaderById(id);
         CaseHeaderVo caseHeaderVo = copy(caseHeader, isBody, isComment);
-//        redisTemplate.opsForValue().set("CaseVo_" + id + "_Body_" + isBody + "_Comment_" + isComment,
-//                JSON.toJSONString(caseHeaderVo), 1, TimeUnit.HOURS);
+        // threadService.updateCaseViewtimes(id);
         return caseHeaderVo;
     }
 

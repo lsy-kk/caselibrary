@@ -9,6 +9,7 @@ import org.springframework.data.elasticsearch.annotations.Document;
 import java.util.Date;
 
 @Document(indexName = "caseheader")
+// ElasticSearch会默认创建索引
 @TableName("case_header")
 @Data
 public class CaseHeader {

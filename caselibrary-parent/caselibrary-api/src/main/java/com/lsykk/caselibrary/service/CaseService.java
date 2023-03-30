@@ -5,6 +5,7 @@ import com.lsykk.caselibrary.vo.ApiResult;
 import com.lsykk.caselibrary.vo.CaseHeaderVo;
 import com.lsykk.caselibrary.vo.params.CaseParam;
 import com.lsykk.caselibrary.vo.params.PageParams;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -101,5 +102,12 @@ public interface CaseService {
      * @return
      */
     CaseHeader getCaseHeaderById(Long id);
+
+    /**
+     * 管理员更新案例信息
+     * @param caseHeader
+     * @return
+     */
+    ApiResult updateCaseHeader(CaseHeader caseHeader);
 
 }

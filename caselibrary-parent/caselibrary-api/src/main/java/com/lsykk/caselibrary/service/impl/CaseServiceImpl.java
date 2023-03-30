@@ -34,6 +34,7 @@ import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilde
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -162,7 +163,10 @@ public class CaseServiceImpl implements CaseService {
             //放到实体类中
             caseHeaderList.add(searchHit.getContent());
         }
-        return ApiResult.success(copyList(caseHeaderList, false, false));
+        PageVo<CaseHeaderVo> pageVo = new PageVo();
+        pageVo.setRecordList(copyList(caseHeaderList, false, false));
+        pageVo.setTotal(search.getTotalHits());
+        return ApiResult.success(pageVo);
     }
 
     @Override
@@ -225,10 +229,14 @@ public class CaseServiceImpl implements CaseService {
                 caseBodyVoLatest.getVersion() == null){
             return ApiResult.fail(ErrorCode.PARAMS_ERROR);
         }
-        // header更新时间置为空
-        caseHeader.setUpdateTime(null);
+        caseHeader.setUpdateTime(new Timestamp(System.currentTimeMillis()));
         // 首次发布的情况，先插入header
         if (caseHeader.getId() == null){
+            caseHeader.setComment(0);
+            caseHeader.setThumb(0);
+            caseHeader.setViewtimes(0);
+            caseHeader.setStatus(1);
+            caseHeader.setCreateTime(new Timestamp(System.currentTimeMillis()));
             caseHeaderMapper.insertAndGetId(caseHeader);
             if (caseHeader.getId() == null){
                 return ApiResult.fail(ErrorCode.DATABASE_INSERT_ERROR);
@@ -259,7 +267,7 @@ public class CaseServiceImpl implements CaseService {
     public CaseHeaderVo getCaseHeaderVoById(Long id, boolean isBody, boolean isComment){
         CaseHeader caseHeader = getCaseHeaderById(id);
         CaseHeaderVo caseHeaderVo = copy(caseHeader, isBody, isComment);
-        // threadService.updateCaseViewtimes(id);
+        threadService.updateCaseViewtimes(id);
         return caseHeaderVo;
     }
 
@@ -268,6 +276,19 @@ public class CaseServiceImpl implements CaseService {
         return caseHeaderMapper.selectById(id);
     }
 
+    @Override
+    public ApiResult updateCaseHeader(CaseHeader caseHeader){
+        if (StringUtils.isBlank(caseHeader.getTitle()) ||
+                caseHeader.getId() == null ||
+                caseHeader.getAuthorId() == null ||
+                caseHeader.getVisible() == null ||
+                caseHeader.getState() == null){
+            return ApiResult.fail(ErrorCode.PARAMS_ERROR);
+        }
+        caseHeader.setCreateTime(new Timestamp(System.currentTimeMillis()));
+        elasticsearchRestTemplate.save(caseHeader);
+        return ApiResult.success();
+    }
     private List<CaseHeaderVo> copyList(List<CaseHeader> list, boolean isBody, boolean isComment){
         List<CaseHeaderVo> caseHeaderVoList = new ArrayList<>();
         for (CaseHeader caseHeader : list) {

@@ -29,6 +29,10 @@ public class CaseHeader {
 
     private Integer comment;
 
+    private Integer favorites;
+
+    private Double hot;
+
     private Integer state;
 
     private Integer visible;

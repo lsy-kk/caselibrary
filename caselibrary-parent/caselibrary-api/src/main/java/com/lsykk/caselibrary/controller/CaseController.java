@@ -100,4 +100,9 @@ public class CaseController {
     public ApiResult getCaseParam(@RequestParam(required = false) Long caseId){
         return caseService.getCaseParamById(caseId);
     }
+
+    @PutMapping("/update")
+    public ApiResult updateCaseHeader(@RequestBody CaseHeader caseHeader){
+        return caseService.updateCaseHeader(caseHeader);
+    }
 }

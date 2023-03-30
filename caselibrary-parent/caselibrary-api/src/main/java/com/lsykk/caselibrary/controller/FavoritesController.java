@@ -1,6 +1,7 @@
 package com.lsykk.caselibrary.controller;
 
 import com.lsykk.caselibrary.dao.pojo.Favorites;
+import com.lsykk.caselibrary.dao.pojo.FavoritesInstance;
 import com.lsykk.caselibrary.service.FavoritesService;
 import com.lsykk.caselibrary.vo.ApiResult;
 import com.lsykk.caselibrary.vo.params.PageParams;
@@ -28,6 +29,11 @@ public class FavoritesController {
         return favoritesService.getFavoritesList(pageParams, favorites);
     }
 
+    @GetMapping("/getByOwnerId")
+    public ApiResult getByOwnerId(@RequestParam Long ownerId){
+        return ApiResult.success(favoritesService.findFavoritesByUserId(ownerId));
+    }
+
     @PostMapping("/insert")
     public ApiResult insert(@RequestBody Favorites favorites){
         return favoritesService.insertFavorites(favorites);
@@ -38,4 +44,13 @@ public class FavoritesController {
         return favoritesService.updateFavorites(favorites);
     }
 
+    @PostMapping("/insertItem")
+    public ApiResult insertItem(@RequestBody FavoritesInstance favoritesInstance){
+        return favoritesService.insertItem(favoritesInstance);
+    }
+
+    @PutMapping("/updateItem")
+    public ApiResult update(@RequestBody FavoritesInstance favoritesInstance){
+        return favoritesService.updateItem(favoritesInstance);
+    }
 }

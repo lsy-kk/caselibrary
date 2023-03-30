@@ -2,8 +2,10 @@ package com.lsykk.caselibrary.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.lsykk.caselibrary.dao.mapper.FavoritesInstanceMapper;
 import com.lsykk.caselibrary.dao.mapper.FavoritesMapper;
 import com.lsykk.caselibrary.dao.pojo.Favorites;
+import com.lsykk.caselibrary.dao.pojo.FavoritesInstance;
 import com.lsykk.caselibrary.service.FavoritesService;
 import com.lsykk.caselibrary.vo.ApiResult;
 import com.lsykk.caselibrary.vo.ErrorCode;
@@ -18,6 +20,8 @@ import java.util.List;
 public class FavoritesServiceImpl implements FavoritesService {
     @Autowired
     private FavoritesMapper favoritesMapper;
+    @Autowired
+    private FavoritesInstanceMapper favoritesInstanceMapper;
 
     @Override
     public ApiResult getFavoritesList(PageParams pageParams, Favorites favorites) {
@@ -33,6 +37,15 @@ public class FavoritesServiceImpl implements FavoritesService {
         Page<Favorites> favoritesPage = favoritesMapper.selectPage(page, queryWrapper);
         List<Favorites> favoritesList = favoritesPage.getRecords();
         return ApiResult.success(favoritesList);
+    }
+
+    @Override
+    public List<Favorites> findFavoritesByUserId(Long id){
+        LambdaQueryWrapper<Favorites> queryWrapper = new LambdaQueryWrapper<>();
+        /* 动态SQL语句 */
+        queryWrapper.eq(id !=null, Favorites::getOwnerId, id);
+        queryWrapper.eq(Favorites::getStatus, 1);
+        return favoritesMapper.selectList(queryWrapper);
     }
 
     @Override
@@ -61,6 +74,18 @@ public class FavoritesServiceImpl implements FavoritesService {
             return ApiResult.fail(ErrorCode.PARAMS_ERROR.getCode(), ErrorCode.PARAMS_ERROR.getMsg());
         }
         favoritesMapper.updateById(favorites);
+        return ApiResult.success();
+    }
+
+    @Override
+    public ApiResult insertItem(FavoritesInstance favoritesInstance){
+        favoritesInstanceMapper.insert(favoritesInstance);
+        return ApiResult.success();
+    }
+
+    @Override
+    public ApiResult updateItem(FavoritesInstance favoritesInstance){
+        favoritesInstanceMapper.updateById(favoritesInstance);
         return ApiResult.success();
     }
 }

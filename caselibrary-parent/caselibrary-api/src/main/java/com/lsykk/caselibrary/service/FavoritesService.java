@@ -1,8 +1,11 @@
 package com.lsykk.caselibrary.service;
 
 import com.lsykk.caselibrary.dao.pojo.Favorites;
+import com.lsykk.caselibrary.dao.pojo.FavoritesInstance;
 import com.lsykk.caselibrary.vo.ApiResult;
 import com.lsykk.caselibrary.vo.params.PageParams;
+
+import java.util.List;
 
 public interface FavoritesService {
 
@@ -13,6 +16,14 @@ public interface FavoritesService {
      * @return
      */
     ApiResult getFavoritesList(PageParams pageParams, Favorites favorites);
+
+    /**
+     * 根据用户id获取其创建的所有收藏夹
+     * @param id
+     * @return
+     */
+    List<Favorites>   findFavoritesByUserId(Long id);
+
 
     /**
      * 根据收藏夹id获取对应收藏夹信息
@@ -35,4 +46,17 @@ public interface FavoritesService {
      */
     ApiResult updateFavorites(Favorites favorites);
 
+    /**
+     * 向收藏夹中增加记录
+     * @param favoritesInstance
+     * @return
+     */
+    ApiResult insertItem(FavoritesInstance favoritesInstance);
+
+    /**
+     * 更新收藏夹中记录
+     * @param favoritesInstance
+     * @return
+     */
+    ApiResult updateItem(FavoritesInstance favoritesInstance);
 }

@@ -7,10 +7,12 @@ import com.lsykk.caselibrary.dao.mapper.CommentMapper;
 import com.lsykk.caselibrary.dao.pojo.CaseHeader;
 import com.lsykk.caselibrary.dao.pojo.Comment;
 import com.lsykk.caselibrary.service.CommentService;
+import com.lsykk.caselibrary.service.ThreadService;
 import com.lsykk.caselibrary.service.UserService;
 import com.lsykk.caselibrary.utils.DateUtils;
 import com.lsykk.caselibrary.vo.ApiResult;
 import com.lsykk.caselibrary.vo.CommentVo;
+import com.lsykk.caselibrary.vo.ErrorCode;
 import com.lsykk.caselibrary.vo.UserVo;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -24,12 +26,15 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 public class CommentServiceImpl implements CommentService {
+
+    @Autowired
+    private RedisTemplate<String,String> redisTemplate;
+    @Autowired
+    private ThreadService threadService;
     @Autowired
     private CommentMapper commentMapper;
     @Autowired
     private UserService userService;
-    @Autowired
-    private RedisTemplate<String,String> redisTemplate;
 
     @Override
     public List<CommentVo> getCommentVoListByCaseId(Long caseId){
@@ -44,7 +49,11 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public ApiResult insertComment(Comment comment){
+        if (comment.getCaseId() == null || comment.getAuthorId() == null){
+            return ApiResult.fail(ErrorCode.PARAMS_ERROR);
+        }
         commentMapper.insertAndGetId(comment);
+        threadService.updateCaseComment(comment.getCaseId());
         return ApiResult.success(getCommentVoById(comment.getId()));
     }
 

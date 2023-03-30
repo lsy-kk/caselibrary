@@ -26,20 +26,20 @@ public class ApiResult {
 
     // 成功
     public static ApiResult success(){
-        return new ApiResult(true, "A00000","success", null);
+        return new ApiResult(true, "00000","success", null);
     }
 
     public static ApiResult success(Object data){
-        return new ApiResult(true, "A00000","success", data);
+        return new ApiResult(true, "00000","success", data);
     }
 
     // 失败
-    public static ApiResult fail(String code, Object data){
-        return new ApiResult(false, code, "fail", data);
+    public static ApiResult fail(String code, String msg){
+        return new ApiResult(false, code, msg, null);
     }
 
     // 失败
     public static ApiResult fail(ErrorCode errorCode){
-        return new ApiResult(false, errorCode.getCode(), "fail", errorCode.getMsg());
+        return new ApiResult(false, errorCode.getCode(), errorCode.getMsg(), null);
     }
 }

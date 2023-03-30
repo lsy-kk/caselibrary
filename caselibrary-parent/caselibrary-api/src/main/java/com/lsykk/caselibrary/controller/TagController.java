@@ -28,6 +28,15 @@ public class TagController {
         return tagService.getTagList(pageParams, tag);
     }
 
+    @GetMapping("/getTagVoList")
+    public ApiResult getTagVoList(@RequestParam(defaultValue = "1") Integer page,
+                                  @RequestParam(defaultValue = "10") Integer pageSize,
+                                  @RequestParam(required = false)  Long id,
+                                  @RequestParam(required = false)  String name){
+        PageParams pageParams = new PageParams(page, pageSize);
+        return tagService.getTagVoList(pageParams, id, name);
+    }
+
     @GetMapping("/getTagListByPrefix")
     public ApiResult getTagListByPrefix(@RequestParam(required = false) String prefix){
         return tagService.getTagListByPrefix(prefix);

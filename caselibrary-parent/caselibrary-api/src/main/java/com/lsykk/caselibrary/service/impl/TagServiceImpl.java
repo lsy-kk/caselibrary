@@ -8,10 +8,7 @@ import com.lsykk.caselibrary.dao.pojo.CaseHeader;
 import com.lsykk.caselibrary.dao.pojo.CaseTag;
 import com.lsykk.caselibrary.dao.pojo.Tag;
 import com.lsykk.caselibrary.service.TagService;
-import com.lsykk.caselibrary.vo.ApiResult;
-import com.lsykk.caselibrary.vo.CaseTagVo;
-import com.lsykk.caselibrary.vo.ErrorCode;
-import com.lsykk.caselibrary.vo.TagVo;
+import com.lsykk.caselibrary.vo.*;
 import com.lsykk.caselibrary.vo.params.PageParams;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -40,6 +37,23 @@ public class TagServiceImpl implements TagService {
         Page<Tag> tagPage = tagMapper.selectPage(page, queryWrapper);
         List<Tag> tagList = tagPage.getRecords();
         return ApiResult.success(tagList);
+    }
+
+    @Override
+    public ApiResult getTagVoList(PageParams pageParams, Long id, String name){
+        /* 分页查询 tag数据库表 */
+        Page<Tag> page = new Page<>(pageParams.getPage(), pageParams.getPageSize());
+        LambdaQueryWrapper<Tag> queryWrapper = new LambdaQueryWrapper<>();
+        /* 动态SQL语句 */
+        queryWrapper.eq(id!=null, Tag::getId, id);
+        queryWrapper.like(StringUtils.isNotBlank(name), Tag::getName, name);
+        /* 按照ID顺序排序 */
+        queryWrapper.orderByAsc(Tag::getId);
+        Page<Tag> tagPage = tagMapper.selectPage(page, queryWrapper);
+        PageVo<TagVo> pageVo = new PageVo();
+        pageVo.setRecordList(copyList(tagPage.getRecords()));
+        pageVo.setTotal(tagPage.getTotal());
+        return ApiResult.success(pageVo);
     }
 
     @Override

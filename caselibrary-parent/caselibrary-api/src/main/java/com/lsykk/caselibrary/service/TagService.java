@@ -18,6 +18,16 @@ public interface TagService {
      */
     ApiResult getTagList(PageParams pageParams, Tag tag);
 
+
+    /**
+     * 分页获取标签Vo列表
+     * @param pageParams
+     * @param id
+     * @param name
+     * @return
+     */
+    ApiResult getTagVoList(PageParams pageParams, Long id, String name);
+
     /**
      * （可能有前缀限制）获取标签列表
      * @param prefix

@@ -13,19 +13,31 @@ import java.util.List;
 public interface CaseService {
 
     /**
-     * 分页获取查找结果(可选的多种条件查询，管理员，status不限）
+     * 分页获取查找结果(可选的多种条件查询），面向用户
+     * @param pageParams
+     * @param id
+     * @param authorId
+     * @param visible
+     * @param state
+     * @param isBody
+     * @param isComment
+     * @return
+     */
+    ApiResult getCaseHeaderVoList(PageParams pageParams, Long id, Long authorId, Integer visible,
+                                  Integer state, boolean isBody, boolean isComment);
+
+    /**
+     * 分页获取查找结果，面向管理员
      * @param pageParams
      * @param id
      * @param authorId
      * @param visible
      * @param state
      * @param status
-     * @param isBody
-     * @param isComment
      * @return
      */
-    ApiResult getCaseHeaderVoList(PageParams pageParams, Long id, Long authorId, Integer visible,
-                                  Integer state, Integer status, boolean isBody, boolean isComment);
+    ApiResult getCaseHeaderList(PageParams pageParams, Long id, Long authorId, Integer visible,
+                                  Integer state, Integer status);
 
     /**
      * 获取最近的案例

@@ -32,11 +32,23 @@ public class CaseController {
                                     @RequestParam(required = false) Long authorId,
                                     @RequestParam(required = false) Integer visible,
                                     @RequestParam(required = false) Integer state,
-                                    @RequestParam(required = false) Integer status,
                                     @RequestParam(defaultValue = "false") boolean isBody,
                                     @RequestParam(defaultValue = "false") boolean isComment) {
         PageParams pageParams = new PageParams(page, pageSize);
-        return caseService.getCaseHeaderVoList(pageParams, id, authorId, visible, state, status, isBody, isComment);
+        return caseService.getCaseHeaderVoList(pageParams, id, authorId, visible, state, isBody, isComment);
+    }
+
+    // 分页、根据条件获取所有案例列表
+    @GetMapping("/getCaseList")
+    public ApiResult getCaseList(@RequestParam(defaultValue = "1") Integer page,
+                                 @RequestParam(defaultValue = "10") Integer pageSize,
+                                 @RequestParam(required = false) Long id,
+                                 @RequestParam(required = false) Long authorId,
+                                 @RequestParam(required = false) Integer visible,
+                                 @RequestParam(required = false) Integer state,
+                                 @RequestParam(required = false) Integer status) {
+        PageParams pageParams = new PageParams(page, pageSize);
+        return caseService.getCaseHeaderList(pageParams, id, authorId, visible, state, status);
     }
 
     // 获取热度排序列表

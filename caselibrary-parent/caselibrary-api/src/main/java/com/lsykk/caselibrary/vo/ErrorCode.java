@@ -10,6 +10,7 @@ public enum ErrorCode {
     File_Upload_Error("20001","文件上传失败"),
     File_Upload_Illegal("20002","上传文件类型错误"),
     DATABASE_INSERT_ERROR("20003","数据库插入失败"),
+    SYSTEM_ERROR("20004","系统错误"),
     CANNOT_FIND_DATA("30001","找不到数据"),
     CANNOT_SENT_EMAIL("30002","发送邮件失败"),
     CANNOT_DELETE_FILE("30003","无法删除云存储中的文件"),

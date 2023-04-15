@@ -1,6 +1,5 @@
 package com.lsykk.caselibrary.service.impl;
 
-import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lsykk.caselibrary.dao.mapper.CaseBodyMapper;
@@ -15,17 +14,12 @@ import com.lsykk.caselibrary.vo.*;
 import com.lsykk.caselibrary.vo.params.CaseParam;
 import com.lsykk.caselibrary.vo.params.PageParams;
 import org.apache.commons.lang3.StringUtils;
-import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
-import org.elasticsearch.search.sort.SortBuilders;
-import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
@@ -36,7 +30,6 @@ import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -67,7 +60,31 @@ public class CaseServiceImpl implements CaseService {
 
     @Override
     public ApiResult getCaseHeaderVoList(PageParams pageParams, Long id, Long authorId, Integer visible,
-                                         Integer state, Integer status, boolean isBody, boolean isComment){
+                                         Integer state, boolean isBody, boolean isComment){
+        //分页查询 case数据库表
+        Page<CaseHeader> page = new Page<>(pageParams.getPage(), pageParams.getPageSize());
+        LambdaQueryWrapper<CaseHeader> queryWrapper = new LambdaQueryWrapper<>();
+        if (id != null){
+            queryWrapper.eq(CaseHeader::getId, id);
+        }
+        else {
+            queryWrapper.eq(CaseHeader::getStatus, 1);
+            queryWrapper.eq(state!=null, CaseHeader::getState, state);
+            queryWrapper.eq(visible!=null, CaseHeader::getVisible, visible);
+            queryWrapper.eq(authorId!=null, CaseHeader::getAuthorId, authorId);
+        }
+        // 按照id（即发布时间）倒叙排序
+        queryWrapper.orderByDesc(CaseHeader::getId);
+        Page<CaseHeader> casePage = caseHeaderMapper.selectPage(page, queryWrapper);
+        PageVo<CaseHeaderVo> pageVo = new PageVo();
+        pageVo.setRecordList(copyList(casePage.getRecords(), isBody, isComment));
+        pageVo.setTotal(casePage.getTotal());
+        return ApiResult.success(pageVo);
+    }
+
+    @Override
+    public ApiResult getCaseHeaderList(PageParams pageParams, Long id, Long authorId, Integer visible,
+                                       Integer state, Integer status){
         //分页查询 case数据库表
         Page<CaseHeader> page = new Page<>(pageParams.getPage(), pageParams.getPageSize());
         LambdaQueryWrapper<CaseHeader> queryWrapper = new LambdaQueryWrapper<>();
@@ -83,12 +100,11 @@ public class CaseServiceImpl implements CaseService {
         // 按照id（即发布时间）倒叙排序
         queryWrapper.orderByDesc(CaseHeader::getId);
         Page<CaseHeader> casePage = caseHeaderMapper.selectPage(page, queryWrapper);
-        PageVo<CaseHeaderVo> pageVo = new PageVo();
-        pageVo.setRecordList(copyList(casePage.getRecords(), isBody, isComment));
+        PageVo<CaseHeader> pageVo = new PageVo();
+        pageVo.setRecordList(casePage.getRecords());
         pageVo.setTotal(casePage.getTotal());
         return ApiResult.success(pageVo);
     }
-
 
     @Override
     public ApiResult getOtherAuthorList(PageParams pageParams, Long userId, boolean isBody, boolean isComment){
@@ -285,7 +301,8 @@ public class CaseServiceImpl implements CaseService {
                 caseHeader.getState() == null){
             return ApiResult.fail(ErrorCode.PARAMS_ERROR);
         }
-        caseHeader.setCreateTime(new Timestamp(System.currentTimeMillis()));
+        caseHeader.setUpdateTime(new Timestamp(System.currentTimeMillis()));
+        caseHeaderMapper.updateById(caseHeader);
         elasticsearchRestTemplate.save(caseHeader);
         return ApiResult.success();
     }

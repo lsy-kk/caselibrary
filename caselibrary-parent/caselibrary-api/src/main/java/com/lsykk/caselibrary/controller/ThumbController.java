@@ -1,9 +1,7 @@
 package com.lsykk.caselibrary.controller;
 
-import com.lsykk.caselibrary.dao.pojo.Thumb;
 import com.lsykk.caselibrary.service.ThumbService;
 import com.lsykk.caselibrary.vo.ApiResult;
-import com.lsykk.caselibrary.vo.params.CaseParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,8 +11,18 @@ public class ThumbController {
     @Autowired
     private ThumbService thumbService;
 
-    @PostMapping("")
-    public ApiResult thumbById(@RequestBody Thumb thumb){
-        return thumbService.insertThumb(thumb);
+    @GetMapping("/insert")
+    public ApiResult insert(@RequestParam Long caseId, @RequestParam Long userId){
+        return thumbService.insertThumb(caseId, userId);
+    }
+
+    @GetMapping("/delete")
+    public ApiResult delete(@RequestParam Long caseId, @RequestParam Long userId){
+        return thumbService.deleteThumb(caseId, userId);
+    }
+
+    @GetMapping("/get")
+    public ApiResult get(@RequestParam Long caseId, @RequestParam Long userId){
+        return ApiResult.success(thumbService.getThumbByCaseIdAndUserId(caseId, userId));
     }
 }

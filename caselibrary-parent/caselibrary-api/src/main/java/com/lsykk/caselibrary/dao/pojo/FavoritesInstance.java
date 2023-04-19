@@ -18,7 +18,7 @@ public class FavoritesInstance {
 
     private Long favoritesId;
 
-    private Long user_id;
+    private Long userId;
 
     private Integer status;
 

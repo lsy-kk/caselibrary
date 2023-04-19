@@ -7,13 +7,17 @@ import com.lsykk.caselibrary.dao.mapper.FavoritesMapper;
 import com.lsykk.caselibrary.dao.pojo.Favorites;
 import com.lsykk.caselibrary.dao.pojo.FavoritesInstance;
 import com.lsykk.caselibrary.service.FavoritesService;
-import com.lsykk.caselibrary.vo.ApiResult;
-import com.lsykk.caselibrary.vo.ErrorCode;
+import com.lsykk.caselibrary.service.ThumbService;
+import com.lsykk.caselibrary.service.UserService;
+import com.lsykk.caselibrary.utils.DateUtils;
+import com.lsykk.caselibrary.vo.*;
 import com.lsykk.caselibrary.vo.params.PageParams;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -22,30 +26,72 @@ public class FavoritesServiceImpl implements FavoritesService {
     private FavoritesMapper favoritesMapper;
     @Autowired
     private FavoritesInstanceMapper favoritesInstanceMapper;
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private ThumbService thumbService;
 
     @Override
-    public ApiResult getFavoritesList(PageParams pageParams, Favorites favorites) {
-        /* 分页查询 favorites数据库表 */
+    public ApiResult getFavoritesList(PageParams pageParams, Long id, Long ownId, Integer status){
         Page<Favorites> page = new Page<>(pageParams.getPage(), pageParams.getPageSize());
         LambdaQueryWrapper<Favorites> queryWrapper = new LambdaQueryWrapper<>();
-        /* 动态SQL语句 */
-        queryWrapper.eq(favorites.getId()!=null, Favorites::getId, favorites.getId());
-        queryWrapper.like(StringUtils.isNotBlank(favorites.getName()), Favorites::getName, favorites.getName());
-        queryWrapper.eq(favorites.getOwnerId()!=null, Favorites::getOwnerId, favorites.getOwnerId());
-        /* 按照ID顺序排序 */
-        queryWrapper.orderByAsc(Favorites::getId);
+        if (id != null){
+            queryWrapper.eq(Favorites::getId, id);
+        }
+        else {
+            queryWrapper.eq(status!=null, Favorites::getStatus, status);
+            queryWrapper.eq(ownId!=null, Favorites::getOwnerId, ownId);
+        }
+        queryWrapper.orderByDesc(Favorites::getId);
         Page<Favorites> favoritesPage = favoritesMapper.selectPage(page, queryWrapper);
-        List<Favorites> favoritesList = favoritesPage.getRecords();
-        return ApiResult.success(favoritesList);
+        PageVo<Favorites> pageVo = new PageVo();
+        pageVo.setRecordList(favoritesPage.getRecords());
+        pageVo.setTotal(favoritesPage.getTotal());
+        return ApiResult.success(pageVo);
     }
 
     @Override
-    public List<Favorites> findFavoritesByUserId(Long id){
+    public ApiResult findFavoritesVoByUserId(Long id){
         LambdaQueryWrapper<Favorites> queryWrapper = new LambdaQueryWrapper<>();
-        /* 动态SQL语句 */
-        queryWrapper.eq(id !=null, Favorites::getOwnerId, id);
+        queryWrapper.eq(Favorites::getOwnerId, id);
         queryWrapper.eq(Favorites::getStatus, 1);
-        return favoritesMapper.selectList(queryWrapper);
+        return ApiResult.success(copyList(favoritesMapper.selectList(queryWrapper)));
+    }
+
+    @Override
+    public ApiResult findFavoritesVoByCaseIdAndUserId(Long caseId, Long userId){
+        LambdaQueryWrapper<Favorites> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Favorites::getOwnerId, userId);
+        queryWrapper.eq(Favorites::getStatus, 1);
+        List<FavoritesVo> favoritesVoList = copyList(favoritesMapper.selectList(queryWrapper));
+        for (int i=0; i<favoritesVoList.size(); ++i){
+            LambdaQueryWrapper<FavoritesInstance> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(FavoritesInstance::getCaseId, caseId);
+            wrapper.eq(FavoritesInstance::getFavoritesId, favoritesVoList.get(i).getId());
+            wrapper.eq(FavoritesInstance::getStatus, 1);
+            wrapper.last("limit 1");
+            FavoritesInstance favoritesInstance = favoritesInstanceMapper.selectOne(wrapper);
+            favoritesVoList.get(i).setFavorites(favoritesInstance != null);
+        }
+        return ApiResult.success(favoritesVoList);
+    }
+
+    @Override
+    public boolean getFavoritesByCaseIdAndUserId(Long caseId, Long userId){
+        LambdaQueryWrapper<FavoritesInstance> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(FavoritesInstance::getCaseId, caseId);
+        wrapper.eq(FavoritesInstance::getStatus, 1);
+        wrapper.last("limit 1");
+        FavoritesInstance favoritesInstance = favoritesInstanceMapper.selectOne(wrapper);
+        return favoritesInstance != null;
+    }
+
+    @Override
+    public ApiResult getUserAttitudeVo(Long caseId, Long userId){
+        UserAttitudeVo userAttitudeVo = new UserAttitudeVo();
+        userAttitudeVo.setFavorites(getFavoritesByCaseIdAndUserId(caseId, userId));
+        userAttitudeVo.setThumb(thumbService.getThumbByCaseIdAndUserId(caseId, userId));
+        return ApiResult.success(userAttitudeVo);
     }
 
     @Override
@@ -61,8 +107,8 @@ public class FavoritesServiceImpl implements FavoritesService {
             return ApiResult.fail(ErrorCode.PARAMS_ERROR.getCode(), ErrorCode.PARAMS_ERROR.getMsg());
         }
         favorites.setStatus(1);
-        favoritesMapper.insert(favorites);
-        return ApiResult.success();
+        favoritesMapper.insertAndGetId(favorites);
+        return ApiResult.success(copy(favorites));
     }
 
     @Override
@@ -78,14 +124,42 @@ public class FavoritesServiceImpl implements FavoritesService {
     }
 
     @Override
-    public ApiResult insertItem(FavoritesInstance favoritesInstance){
-        favoritesInstanceMapper.insert(favoritesInstance);
+    public ApiResult insertItems(List<FavoritesInstance> favoritesInstances){
+        for (FavoritesInstance favoritesInstance: favoritesInstances){
+            favoritesInstanceMapper.insert(favoritesInstance);
+        }
         return ApiResult.success();
     }
 
     @Override
-    public ApiResult updateItem(FavoritesInstance favoritesInstance){
-        favoritesInstanceMapper.updateById(favoritesInstance);
+    public ApiResult deleteItems(List<FavoritesInstance> favoritesInstances){
+        for (FavoritesInstance favoritesInstance: favoritesInstances) {
+            LambdaQueryWrapper<FavoritesInstance> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(FavoritesInstance::getCaseId, favoritesInstance.getCaseId());
+            queryWrapper.eq(FavoritesInstance::getFavoritesId, favoritesInstance.getFavoritesId());
+            favoritesInstanceMapper.delete(queryWrapper);
+        }
         return ApiResult.success();
+    }
+
+    private List<FavoritesVo> copyList(List<Favorites> list){
+        List<FavoritesVo> favoritesVoList = new ArrayList<>();
+        for (Favorites favorites : list) {
+            favoritesVoList.add(copy(favorites));
+        }
+        return favoritesVoList;
+    }
+
+    private FavoritesVo copy(Favorites favorites){
+        FavoritesVo favoritesVo = new FavoritesVo();
+        BeanUtils.copyProperties(favorites, favoritesVo);
+        favoritesVo.setOwner(userService.findUserVoById(favorites.getOwnerId()));
+        if (favorites.getCreateTime() != null){
+            favoritesVo.setCreateTime(DateUtils.getTime(favorites.getCreateTime()));
+        }
+        if (favorites.getUpdateTime() != null){
+            favoritesVo.setUpdateTime(DateUtils.getTime(favorites.getUpdateTime()));
+        }
+        return favoritesVo;
     }
 }

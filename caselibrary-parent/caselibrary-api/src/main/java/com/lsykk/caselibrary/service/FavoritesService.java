@@ -3,6 +3,7 @@ package com.lsykk.caselibrary.service;
 import com.lsykk.caselibrary.dao.pojo.Favorites;
 import com.lsykk.caselibrary.dao.pojo.FavoritesInstance;
 import com.lsykk.caselibrary.vo.ApiResult;
+import com.lsykk.caselibrary.vo.UserAttitudeVo;
 import com.lsykk.caselibrary.vo.params.PageParams;
 
 import java.util.List;
@@ -10,20 +11,45 @@ import java.util.List;
 public interface FavoritesService {
 
     /**
-     * 根据搜索条件，分页获取收藏夹列表
+     * 获取收藏夹列表（可选条件），管理员
      * @param pageParams
-     * @param favorites
+     * @param id
+     * @param ownId
+     * @param status
      * @return
      */
-    ApiResult getFavoritesList(PageParams pageParams, Favorites favorites);
+    ApiResult getFavoritesList(PageParams pageParams, Long id, Long ownId, Integer status);
 
     /**
-     * 根据用户id获取其创建的所有收藏夹
+     * 根据用户id，获取用户创建的所有收藏夹
      * @param id
      * @return
      */
-    List<Favorites>   findFavoritesByUserId(Long id);
+    ApiResult findFavoritesVoByUserId(Long id);
 
+    /**
+     * 根据用户id和案例id，获取用户创建的所有收藏夹，以及是否收藏有该案例
+     * @param caseId
+     * @param userId
+     * @return
+     */
+    ApiResult findFavoritesVoByCaseIdAndUserId(Long caseId, Long userId);
+
+    /**
+     * 通过案例id和用户id，判断是否有收藏记录
+     * @param caseId
+     * @param userId
+     * @return
+     */
+    boolean getFavoritesByCaseIdAndUserId(Long caseId, Long userId);
+
+    /**
+     * 获取特定用户对特定案例的点赞和收藏情况
+     * @param caseId
+     * @param userId
+     * @return
+     */
+    ApiResult getUserAttitudeVo(Long caseId, Long userId);
 
     /**
      * 根据收藏夹id获取对应收藏夹信息
@@ -48,15 +74,15 @@ public interface FavoritesService {
 
     /**
      * 向收藏夹中增加记录
-     * @param favoritesInstance
+     * @param favoritesInstances
      * @return
      */
-    ApiResult insertItem(FavoritesInstance favoritesInstance);
+    ApiResult insertItems(List<FavoritesInstance> favoritesInstances);
 
     /**
-     * 更新收藏夹中记录
-     * @param favoritesInstance
+     * 删除收藏夹中记录
+     * @param favoritesInstances
      * @return
      */
-    ApiResult updateItem(FavoritesInstance favoritesInstance);
+    ApiResult deleteItems(List<FavoritesInstance> favoritesInstances);
 }

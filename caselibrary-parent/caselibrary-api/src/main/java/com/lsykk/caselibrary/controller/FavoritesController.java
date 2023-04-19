@@ -8,6 +8,8 @@ import com.lsykk.caselibrary.vo.params.PageParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/favorites")
 public class FavoritesController {
@@ -15,23 +17,29 @@ public class FavoritesController {
     @Autowired
     private FavoritesService favoritesService;
 
-    @GetMapping("/getList")
+    @GetMapping("/getFavoritesList")
     public ApiResult getFavoritesList(@RequestParam(defaultValue = "1") Integer page,
                                       @RequestParam(defaultValue = "10") Integer pageSize,
                                       @RequestParam(required = false)  Long id,
-                                      @RequestParam(required = false)  String name,
-                                      @RequestParam(required = false)  Long ownerId){
+                                      @RequestParam(required = false)  Long ownerId,
+                                      @RequestParam(required = false)  Integer status){
         PageParams pageParams = new PageParams(page, pageSize);
-        Favorites favorites = new Favorites();
-        favorites.setId(id);
-        favorites.setName(name);
-        favorites.setOwnerId(ownerId);
-        return favoritesService.getFavoritesList(pageParams, favorites);
+        return favoritesService.getFavoritesList(pageParams, id, ownerId, status);
     }
 
-    @GetMapping("/getByOwnerId")
-    public ApiResult getByOwnerId(@RequestParam Long ownerId){
-        return ApiResult.success(favoritesService.findFavoritesByUserId(ownerId));
+    @GetMapping("/getFavoritesVoByOwnerId")
+    public ApiResult getFavoritesVoByOwnerId(@RequestParam Long ownerId){
+        return favoritesService.findFavoritesVoByUserId(ownerId);
+    }
+
+    @GetMapping("/getFavoritesVoByCaseIdAndUserId")
+    public ApiResult getFavoritesVoByCaseIdAndUserId(@RequestParam Long caseId, @RequestParam Long userId){
+        return favoritesService.findFavoritesVoByCaseIdAndUserId(caseId, userId);
+    }
+
+    @GetMapping("/getUserAttitudeVo")
+    public ApiResult getUserAttitudeVo(@RequestParam Long caseId, @RequestParam Long userId){
+        return favoritesService.getUserAttitudeVo(caseId, userId);
     }
 
     @PostMapping("/insert")
@@ -44,13 +52,13 @@ public class FavoritesController {
         return favoritesService.updateFavorites(favorites);
     }
 
-    @PostMapping("/insertItem")
-    public ApiResult insertItem(@RequestBody FavoritesInstance favoritesInstance){
-        return favoritesService.insertItem(favoritesInstance);
+    @PostMapping("/insertItems")
+    public ApiResult insertItems(@RequestBody List<FavoritesInstance> favoritesInstances){
+        return favoritesService.insertItems(favoritesInstances);
     }
 
-    @PutMapping("/updateItem")
-    public ApiResult update(@RequestBody FavoritesInstance favoritesInstance){
-        return favoritesService.updateItem(favoritesInstance);
+    @PutMapping("/deleteItems")
+    public ApiResult deleteItems(@RequestBody List<FavoritesInstance> favoritesInstances){
+        return favoritesService.deleteItems(favoritesInstances);
     }
 }

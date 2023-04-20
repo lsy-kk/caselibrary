@@ -54,4 +54,9 @@ public class UserController {
     public ApiResult getUserById(@RequestParam Long id){
         return ApiResult.success(userService.findUserById(id));
     }
+
+    @GetMapping("/getUserVoById")
+    public ApiResult getUserVoById(@RequestParam Long id){
+        return ApiResult.success(userService.findUserVoById(id));
+    }
 }

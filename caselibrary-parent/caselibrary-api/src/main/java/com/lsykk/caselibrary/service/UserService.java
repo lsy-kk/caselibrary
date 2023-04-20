@@ -66,7 +66,7 @@ public interface UserService {
     ApiResult insertUser(User user);
 
     /**
-     * 根据id更新用户密码（也可用于更新状态、权限）
+     * 根据id更新用户密码
      * @param user
      * @return
      */
@@ -87,5 +87,4 @@ public interface UserService {
      */
     void deleteUserById(Long id);
 
-    UserVo copy(User user);
 }

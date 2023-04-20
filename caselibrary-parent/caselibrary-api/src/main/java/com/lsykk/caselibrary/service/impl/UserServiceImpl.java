@@ -1,6 +1,8 @@
 package com.lsykk.caselibrary.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lsykk.caselibrary.dao.mapper.UserMapper;
 import com.lsykk.caselibrary.dao.pojo.User;
@@ -16,6 +18,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 
 @Service
@@ -68,7 +71,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserVo findUserVoById(Long id) {
-        return copy(userMapper.selectById(id));
+        String userVoJson = redisTemplate.opsForValue().get("UserVo_" + id);
+        if (StringUtils.isNotBlank(userVoJson)){
+            return JSON.parseObject(userVoJson, UserVo.class);
+        }
+        UserVo userVo = copy(userMapper.selectById(id));
+        redisTemplate.opsForValue().set("UserVo_" + id, JSON.toJSONString(userVo), 1, TimeUnit.HOURS);
+        return userVo;
     }
 
     @Override
@@ -98,8 +107,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public ApiResult updatePassword(User user){
         /* 这里的user密码没有加密，需要加密保存 */
-        user.setPassword(loginService.encryptedPassword(user.getPassword()));
-        userMapper.updateById(user);
+        String enPassword = loginService.encryptedPassword(user.getPassword());
+        LambdaUpdateWrapper<User> userUpdateWrapper = new LambdaUpdateWrapper<>();
+        userUpdateWrapper.set(User::getPassword, enPassword);
+        userUpdateWrapper.eq(User::getId, user.getId());
+        userMapper.update(null, userUpdateWrapper);
         return ApiResult.success();
     }
 
@@ -107,9 +119,8 @@ public class UserServiceImpl implements UserService {
     public ApiResult updateUser(User user){
         /* 检查参数是否合法 */
         if (user.getId() == null
-                || StringUtils.isBlank(user.getEmail())
-                || StringUtils.isBlank(user.getUsername())
-                || StringUtils.isBlank(user.getPassword())){
+            || StringUtils.isBlank(user.getEmail())
+            || StringUtils.isBlank(user.getUsername())){
             return ApiResult.fail(ErrorCode.PARAMS_ERROR.getCode(), ErrorCode.PARAMS_ERROR.getMsg());
         }
         /* 检查邮箱是否唯一 */
@@ -117,6 +128,8 @@ public class UserServiceImpl implements UserService {
         if (emailUser != null && !user.getId().equals(emailUser.getId())){
             return ApiResult.fail(ErrorCode.ACCOUNT_EXIST.getCode(),"该邮箱已经被注册了");
         }
+        // 不能用于更新密码
+        user.setPassword(null);
         userMapper.updateById(user);
         return ApiResult.success();
     }
@@ -144,7 +157,6 @@ public class UserServiceImpl implements UserService {
         userMapper.deleteById(id);
     }
 
-    @Override
     public UserVo copy(User user){
         UserVo UserVo = new UserVo();
         UserVo.setId(user.getId());

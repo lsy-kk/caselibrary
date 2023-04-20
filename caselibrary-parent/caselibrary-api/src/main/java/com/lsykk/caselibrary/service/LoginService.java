@@ -54,4 +54,11 @@ public interface LoginService {
      * @return
      */
     User checkToken(String token);
+
+    /**
+     * 更新token对应的User信息
+     * @param token
+     * @return
+     */
+    User reLogin(String token);
 }

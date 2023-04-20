@@ -7,12 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/login")
 public class LoginController {
     @Autowired
     private LoginService loginService;
 
     // 登录
-    @PostMapping("/login")
+    @PostMapping("")
     public ApiResult login(@RequestBody LoginParam loginParam){
         return loginService.login(loginParam);
     }
@@ -38,4 +39,8 @@ public class LoginController {
         return loginService.register(loginParam);
     }
 
+    @GetMapping("/reLogin")
+    public ApiResult reLogin(@RequestHeader("Authorization") String token){
+        return ApiResult.success(loginService.reLogin(token));
+    }
 }

@@ -160,4 +160,14 @@ public class LoginServiceImpl implements LoginService {
         }
         return JSON.parseObject(userJson, User.class);
     }
+
+    @Override
+    public User reLogin(String token){
+        User user = checkToken(token);
+        User newUser = userService.findUserById(user.getId());
+        // 更新token对应的信息，有效期设置为剩余时间（毫秒单位）
+        Long resTime = redisTemplate.getExpire("TOKEN_" + token);
+        redisTemplate.opsForValue().set("TOKEN_"+token, JSON.toJSONString(newUser), resTime);
+        return newUser;
+    }
 }

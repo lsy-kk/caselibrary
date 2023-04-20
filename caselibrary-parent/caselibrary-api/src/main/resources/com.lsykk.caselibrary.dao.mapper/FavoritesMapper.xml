@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lsykk.caselibrary.dao.mapper.FavoritesMapper">
+
+    <insert id="insertAndGetId" parameterType="com.lsykk.caselibrary.dao.pojo.Favorites" useGeneratedKeys="true" keyProperty="id" >
+        insert into favorites(name, description, image, owner_id, visible)
+        values (#{name}, #{description}, #{image}, #{ownerId}, #{visible});
+    </insert>
+
+</mapper>

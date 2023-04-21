@@ -74,7 +74,7 @@ public class CaseController {
                                         @RequestParam(defaultValue = "false") boolean isBody,
                                         @RequestParam(defaultValue = "false") boolean isComment){
         PageParams pageParams = new PageParams(page, pageSize);
-        return ApiResult.success(caseService.getOtherAuthorList(pageParams, userId, isBody, isComment));
+        return caseService.getOtherAuthorList(pageParams, userId, isBody, isComment);
     }
 
     // 获取个人主页案例列表
@@ -87,12 +87,15 @@ public class CaseController {
                                @RequestParam(defaultValue = "false") boolean isBody,
                                @RequestParam(defaultValue = "false") boolean isComment){
         PageParams pageParams = new PageParams(page, pageSize);
-        return ApiResult.success(caseService.getMyList(pageParams, userId, visible, state, isBody, isComment));
+        return caseService.getMyList(pageParams, userId, visible, state, isBody, isComment);
     }
 
     @GetMapping("/getCasesByFavoritesId")
-    public ApiResult getCasesByFavoritesId(@RequestParam Long favoritesId){
-        return ApiResult.success(caseService.getCasesByFavoritesId(favoritesId));
+    public ApiResult getCasesByFavoritesId(@RequestParam(defaultValue = "1") Integer page,
+                                           @RequestParam(defaultValue = "10") Integer pageSize,
+                                           @RequestParam Long favoritesId){
+        PageParams pageParams = new PageParams(page, pageSize);
+        return caseService.getCaseHeaderVoByFavoritesId(pageParams, favoritesId);
     }
 
     @GetMapping("/getCaseHeaderVo")

@@ -88,11 +88,11 @@ public interface CaseService {
     CaseHeaderVo getCaseHeaderVoById(Long id, boolean isBody, boolean isComment);
 
     /**
-     * 根据收藏夹id，获取其中的案例
+     * 根据收藏夹id，分页获取其中的案例
      * @param favoritesId
      * @return
      */
-    List<CaseHeader> getCasesByFavoritesId(Long favoritesId);
+    ApiResult getCaseHeaderVoByFavoritesId(PageParams pageParams, Long favoritesId);
 
     /**
      * 根据id获取案例param（header, body和 case_tag）

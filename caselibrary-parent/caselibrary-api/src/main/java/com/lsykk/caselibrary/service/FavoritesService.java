@@ -3,6 +3,7 @@ package com.lsykk.caselibrary.service;
 import com.lsykk.caselibrary.dao.pojo.Favorites;
 import com.lsykk.caselibrary.dao.pojo.FavoritesInstance;
 import com.lsykk.caselibrary.vo.ApiResult;
+import com.lsykk.caselibrary.vo.FavoritesVo;
 import com.lsykk.caselibrary.vo.UserAttitudeVo;
 import com.lsykk.caselibrary.vo.params.PageParams;
 
@@ -52,6 +53,13 @@ public interface FavoritesService {
     ApiResult getUserAttitudeVo(Long caseId, Long userId);
 
     /**
+     * 根据收藏夹id获取对应收藏夹vo
+     * @param id
+     * @return
+     */
+    FavoritesVo findFavoritesVoById(Long id);
+
+    /**
      * 根据收藏夹id获取对应收藏夹信息
      * @param id
      * @return
@@ -72,6 +80,12 @@ public interface FavoritesService {
      */
     ApiResult updateFavorites(Favorites favorites);
 
+    /**
+     * 改变收藏夹状态（status），以及收藏夹中的收藏记录的状态
+     * @param favoritesId
+     * @return
+     */
+    ApiResult changeFavoritesStatus(Long favoritesId, Integer status);
     /**
      * 向收藏夹中增加记录
      * @param favoritesInstances

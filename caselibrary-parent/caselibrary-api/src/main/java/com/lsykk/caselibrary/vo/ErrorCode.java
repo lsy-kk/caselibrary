@@ -12,7 +12,7 @@ public enum ErrorCode {
     DATABASE_INSERT_ERROR("20003","数据库插入失败"),
     SYSTEM_ERROR("20004","系统错误"),
     CANNOT_FIND_DATA("30001","找不到数据"),
-    CANNOT_SENT_EMAIL("30002","发送邮件失败"),
+    CANNOT_SENT_EMAIL("30002","发送失败"),
     CANNOT_DELETE_FILE("30003","无法删除云存储中的文件"),
     NO_PERMISSION("70001","无访问权限"),
     SESSION_TIME_OUT("90001","会话超时"),

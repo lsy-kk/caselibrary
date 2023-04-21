@@ -186,9 +186,13 @@ public class CaseServiceImpl implements CaseService {
     }
 
     @Override
-    public List<CaseHeader> getCasesByFavoritesId(Long favoritesId){
-        //return caseHeaderMapper.findCasesByFavoritesId(favoritesId);
-        return null;
+    public ApiResult getCaseHeaderVoByFavoritesId(PageParams pageParams, Long favoritesId){
+        Page page = new Page(pageParams.getPage(), pageParams.getPageSize());
+        Page<CaseHeader> casePage = caseHeaderMapper.findCasesByFavoritesId(page, favoritesId);
+        PageVo<CaseHeaderVo> pageVo = new PageVo();
+        pageVo.setRecordList(copyList(casePage.getRecords(), false, false));
+        pageVo.setTotal(casePage.getTotal());
+        return ApiResult.success(pageVo);
     }
 
     @Override
@@ -317,8 +321,10 @@ public class CaseServiceImpl implements CaseService {
     private CaseHeaderVo copy(CaseHeader caseHeader, boolean isBody, boolean isComment){
         CaseHeaderVo caseHeaderVo = new CaseHeaderVo();
         BeanUtils.copyProperties(caseHeader, caseHeaderVo);
-        if (caseHeader.getCreateTime() != null && caseHeader.getUpdateTime() != null){
+        if (caseHeader.getCreateTime() != null){
             caseHeaderVo.setCreateTime(DateUtils.getTime(caseHeader.getCreateTime()));
+        }
+        if (caseHeader.getUpdateTime() != null){
             caseHeaderVo.setUpdateTime(DateUtils.getTime(caseHeader.getUpdateTime()));
         }
         if (isBody){
@@ -352,8 +358,10 @@ public class CaseServiceImpl implements CaseService {
         CaseBodyVo caseBodyVo = new CaseBodyVo();
         BeanUtils.copyProperties(caseBody, caseBodyVo);
         caseBodyVo.setAppendixList(fileService.getFileVoByString(caseBody.getAppendix()));
-        if (caseBody.getCreateTime() != null && caseBody.getUpdateTime() != null){
+        if (caseBody.getCreateTime() != null ){
             caseBodyVo.setCreateTime(DateUtils.getTime(caseBody.getCreateTime()));
+        }
+        if (caseBody.getUpdateTime() != null){
             caseBodyVo.setUpdateTime(DateUtils.getTime(caseBody.getUpdateTime()));
         }
         return caseBodyVo;

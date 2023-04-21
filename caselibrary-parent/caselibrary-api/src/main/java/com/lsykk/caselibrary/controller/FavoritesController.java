@@ -27,6 +27,11 @@ public class FavoritesController {
         return favoritesService.getFavoritesList(pageParams, id, ownerId, status);
     }
 
+    @GetMapping("/getFavoritesVoId")
+    public ApiResult getFavoritesVoId(@RequestParam Long id){
+        return ApiResult.success(favoritesService.findFavoritesVoById(id));
+    }
+
     @GetMapping("/getFavoritesVoByOwnerId")
     public ApiResult getFavoritesVoByOwnerId(@RequestParam Long ownerId){
         return favoritesService.findFavoritesVoByUserId(ownerId);
@@ -50,6 +55,11 @@ public class FavoritesController {
     @PutMapping("/update")
     public ApiResult update(@RequestBody Favorites favorites){
         return favoritesService.updateFavorites(favorites);
+    }
+
+    @GetMapping("/changeStatus")
+    public ApiResult changeStatus(@RequestParam Long favoritesId, @RequestParam Integer status){
+        return favoritesService.changeFavoritesStatus(favoritesId, status);
     }
 
     @PostMapping("/insertItems")

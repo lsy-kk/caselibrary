@@ -1,6 +1,7 @@
 package com.lsykk.caselibrary.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lsykk.caselibrary.dao.mapper.FavoritesInstanceMapper;
 import com.lsykk.caselibrary.dao.mapper.FavoritesMapper;
@@ -95,6 +96,12 @@ public class FavoritesServiceImpl implements FavoritesService {
     }
 
     @Override
+    public FavoritesVo findFavoritesVoById(Long id){
+        return copy(findFavoritesById(id));
+    }
+
+
+    @Override
     public Favorites findFavoritesById(Long id){
         return favoritesMapper.selectById(id);
     }
@@ -120,6 +127,19 @@ public class FavoritesServiceImpl implements FavoritesService {
             return ApiResult.fail(ErrorCode.PARAMS_ERROR.getCode(), ErrorCode.PARAMS_ERROR.getMsg());
         }
         favoritesMapper.updateById(favorites);
+        return ApiResult.success();
+    }
+
+    @Override
+    public ApiResult changeFavoritesStatus(Long favoritesId, Integer status){
+        LambdaUpdateWrapper<FavoritesInstance> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(FavoritesInstance::getFavoritesId, favoritesId);
+        updateWrapper.set(FavoritesInstance::getStatus, status);
+        favoritesInstanceMapper.update(null, updateWrapper);
+        LambdaUpdateWrapper<Favorites> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.eq(Favorites::getId, favoritesId);
+        wrapper.set(Favorites::getStatus, status);
+        favoritesMapper.update(null, wrapper);
         return ApiResult.success();
     }
 

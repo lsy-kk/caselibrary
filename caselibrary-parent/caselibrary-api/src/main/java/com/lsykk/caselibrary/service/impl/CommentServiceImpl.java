@@ -58,7 +58,7 @@ public class CommentServiceImpl implements CommentService {
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Comment::getCaseId, caseId);
         queryWrapper.eq(Comment::getParentId,0);
-        queryWrapper.orderByDesc(Comment::getCaseId);
+        queryWrapper.orderByDesc(Comment::getId);
         List<Comment> comments = commentMapper.selectList(queryWrapper);
         List<CommentVo> commentVoList = copyList(comments);
         return commentVoList;
@@ -71,7 +71,7 @@ public class CommentServiceImpl implements CommentService {
             return ApiResult.fail(ErrorCode.PARAMS_ERROR);
         }
         commentMapper.insertAndGetId(comment);
-        threadService.updateCaseComment(comment.getCaseId());
+        threadService.updateCaseComment(comment.getCaseId(), 1);
         return ApiResult.success(getCommentVoById(comment.getId()));
     }
 

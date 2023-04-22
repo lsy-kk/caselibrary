@@ -287,7 +287,7 @@ public class CaseServiceImpl implements CaseService {
     public CaseHeaderVo getCaseHeaderVoById(Long id, boolean isBody, boolean isComment){
         CaseHeader caseHeader = getCaseHeaderById(id);
         CaseHeaderVo caseHeaderVo = copy(caseHeader, isBody, isComment);
-        threadService.updateCaseViewtimes(id);
+        threadService.updateCaseViewtimes(id, 1);
         return caseHeaderVo;
     }
 

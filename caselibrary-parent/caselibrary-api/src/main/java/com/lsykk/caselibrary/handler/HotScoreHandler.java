@@ -29,8 +29,8 @@ public class HotScoreHandler {
     @Autowired
     private ElasticsearchRestTemplate elasticsearchRestTemplate;
 
-    //@Scheduled(cron = "0/50 * * * * *") // 每50秒触发一次
-    @Scheduled(cron = "0 0 3 * * *")
+    @Scheduled(cron = "0 0/5 * * * *") // 每5分钟触发一次
+    //@Scheduled(cron = "0 0 3 * * *")
     // 定时任务，每天凌晨3点执行，计算新的案例热度，以供下一天排序
     @Async("taskExecutor") // 放到线程池中执行，定时任务
     public void scheduled(){
@@ -76,6 +76,7 @@ public class HotScoreHandler {
             double hot = (double)total / pow((double)time, (double) 1/3) + (double)sum;
             caseHeader.setHot(hot);
             caseHeaderMapper.updateById(caseHeader);
+            log.info("更新case {}", caseHeader);
             elasticsearchRestTemplate.save(caseHeader);
         }
         log.info("=====>>>>> 同步案例热度数据结束  {}",new DateTime().toString("yyyy-MM-dd HH:mm:ss"));

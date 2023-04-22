@@ -8,6 +8,7 @@ import com.lsykk.caselibrary.dao.mapper.FavoritesMapper;
 import com.lsykk.caselibrary.dao.pojo.Favorites;
 import com.lsykk.caselibrary.dao.pojo.FavoritesInstance;
 import com.lsykk.caselibrary.service.FavoritesService;
+import com.lsykk.caselibrary.service.ThreadService;
 import com.lsykk.caselibrary.service.ThumbService;
 import com.lsykk.caselibrary.service.UserService;
 import com.lsykk.caselibrary.utils.DateUtils;
@@ -23,6 +24,8 @@ import java.util.List;
 
 @Service
 public class FavoritesServiceImpl implements FavoritesService {
+    @Autowired
+    private ThreadService threadService;
     @Autowired
     private FavoritesMapper favoritesMapper;
     @Autowired
@@ -81,6 +84,7 @@ public class FavoritesServiceImpl implements FavoritesService {
     public boolean getFavoritesByCaseIdAndUserId(Long caseId, Long userId){
         LambdaQueryWrapper<FavoritesInstance> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(FavoritesInstance::getCaseId, caseId);
+        wrapper.eq(FavoritesInstance::getUserId, userId);
         wrapper.eq(FavoritesInstance::getStatus, 1);
         wrapper.last("limit 1");
         FavoritesInstance favoritesInstance = favoritesInstanceMapper.selectOne(wrapper);
@@ -147,6 +151,7 @@ public class FavoritesServiceImpl implements FavoritesService {
     public ApiResult insertItems(List<FavoritesInstance> favoritesInstances){
         for (FavoritesInstance favoritesInstance: favoritesInstances){
             favoritesInstanceMapper.insert(favoritesInstance);
+            threadService.updateCaseFavorites(favoritesInstance.getCaseId(), 1);
         }
         return ApiResult.success();
     }
@@ -158,6 +163,7 @@ public class FavoritesServiceImpl implements FavoritesService {
             queryWrapper.eq(FavoritesInstance::getCaseId, favoritesInstance.getCaseId());
             queryWrapper.eq(FavoritesInstance::getFavoritesId, favoritesInstance.getFavoritesId());
             favoritesInstanceMapper.delete(queryWrapper);
+            threadService.updateCaseFavorites(favoritesInstance.getCaseId(), -1);
         }
         return ApiResult.success();
     }

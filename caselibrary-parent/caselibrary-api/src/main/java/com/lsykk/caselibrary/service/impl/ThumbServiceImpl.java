@@ -3,6 +3,7 @@ package com.lsykk.caselibrary.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.lsykk.caselibrary.dao.mapper.ThumbMapper;
 import com.lsykk.caselibrary.dao.pojo.Thumb;
+import com.lsykk.caselibrary.service.ThreadService;
 import com.lsykk.caselibrary.service.ThumbService;
 import com.lsykk.caselibrary.vo.ApiResult;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,8 @@ import java.util.List;
 @Service
 public class ThumbServiceImpl implements ThumbService {
     @Autowired
+    private ThreadService threadService;
+    @Autowired
     private ThumbMapper thumbMapper;
 
     @Override
@@ -21,6 +24,7 @@ public class ThumbServiceImpl implements ThumbService {
         thumb.setCaseId(caseId);
         thumb.setUserId(userId);
         thumbMapper.insert(thumb);
+        threadService.updateCaseThumb(caseId, 1);
         return ApiResult.success();
     }
 
@@ -30,6 +34,7 @@ public class ThumbServiceImpl implements ThumbService {
         queryWrapper.eq(Thumb::getCaseId, caseId);
         queryWrapper.eq(Thumb::getUserId, userId);
         thumbMapper.delete(queryWrapper);
+        threadService.updateCaseThumb(caseId, -1);
         return ApiResult.success();
     }
 

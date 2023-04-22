@@ -20,6 +20,8 @@ public class CaseHeaderVo {
 
     private Integer comment;
 
+    private Integer favorites;
+
     private Integer visible;
 
     private String createTime;

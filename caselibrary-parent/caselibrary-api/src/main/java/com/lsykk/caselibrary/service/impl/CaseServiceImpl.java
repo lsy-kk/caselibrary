@@ -17,6 +17,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
+import org.elasticsearch.search.sort.SortBuilders;
+import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -138,7 +140,7 @@ public class CaseServiceImpl implements CaseService {
     }
 
     @Override
-    public ApiResult getSearchList(PageParams pageParams, String keyWords){
+    public ApiResult getSearchList(PageParams pageParams, String keyWords, String type){
         // 查询条件
         QueryBuilder queryBuilder = QueryBuilders.boolQuery()
                 .should(QueryBuilders.matchQuery("title", keyWords))
@@ -147,11 +149,9 @@ public class CaseServiceImpl implements CaseService {
                 .filter(QueryBuilders.termQuery("state",1))
                 .filter(QueryBuilders.termQuery("status",1));
         //查询构建器
-        NativeSearchQuery searchQuery = new NativeSearchQueryBuilder()
+        NativeSearchQueryBuilder searchQueryBuilder = new NativeSearchQueryBuilder()
                 // 分页设置
                 .withPageable(PageRequest.of(pageParams.getPage()-1, pageParams.getPageSize()))
-                // 日期倒排
-                //.withSort(SortBuilders.fieldSort("updateTime").order(SortOrder.DESC))
                 // 查询条件
                 .withQuery(queryBuilder)
                 // 添加高亮显示字段
@@ -159,8 +159,30 @@ public class CaseServiceImpl implements CaseService {
                         new HighlightBuilder.Field("title"),
                         new HighlightBuilder.Field("summary"))
                 // 高亮显示颜色
-                .withHighlightBuilder(new HighlightBuilder().preTags("<span style='color:red'>").postTags("</span>"))
-                .build();
+                .withHighlightBuilder(new HighlightBuilder().preTags("<span style='color:red'>").postTags("</span>"));
+          switch (type) {
+            case "hot":
+                // 热度值倒排
+                searchQueryBuilder.withSort(SortBuilders.fieldSort("hot").order(SortOrder.DESC));
+                break;
+            case "new":
+                // 序号（即日期）倒排
+                searchQueryBuilder.withSort(SortBuilders.fieldSort("id").order(SortOrder.DESC));
+                break;
+            case "view":
+                // 点击数倒排
+                searchQueryBuilder.withSort(SortBuilders.fieldSort("viewtimes").order(SortOrder.DESC));
+                break;
+            case "thumb":
+                // 点赞数倒排
+                searchQueryBuilder.withSort(SortBuilders.fieldSort("thumb").order(SortOrder.DESC));
+                break;
+            case "favorites":
+                // 收藏数倒排
+                searchQueryBuilder.withSort(SortBuilders.fieldSort("favorites").order(SortOrder.DESC));
+                break;
+        }
+        NativeSearchQuery searchQuery = searchQueryBuilder.build();
         // 查询
         SearchHits<CaseHeader> search = elasticsearchRestTemplate.search(searchQuery, CaseHeader.class);
         // 查询结果（分页，只是一部分）

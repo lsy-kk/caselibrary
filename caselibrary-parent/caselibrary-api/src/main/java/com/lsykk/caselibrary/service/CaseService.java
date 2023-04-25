@@ -75,11 +75,16 @@ public interface CaseService {
      * 案例关键字（title，summary）搜索，分页获取结果
      * @param pageParams
      * @param keyWords
+     * @param type
      * @return
      */
-    ApiResult getSearchList(PageParams pageParams, String keyWords);
+    ApiResult getSearchList(PageParams pageParams, String keyWords, String type);
 
-
+    /**
+     * 同步caseHeaderVoRepository的后门接口
+     * @return
+     */
+    ApiResult caseHeaderVoRepositoryReload();
     /**
      * 根据id获取案例头部信息（VO）
      * @param id

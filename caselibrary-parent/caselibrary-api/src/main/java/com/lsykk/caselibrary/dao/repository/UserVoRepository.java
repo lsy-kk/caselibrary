@@ -1,12 +1,14 @@
 package com.lsykk.caselibrary.dao.repository;
 
-import com.lsykk.caselibrary.dao.pojo.User;
+import com.lsykk.caselibrary.vo.UserVo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
+import org.springframework.stereotype.Repository;
 
-public interface UserRepository extends ElasticsearchRepository<User, Long> {
+@Repository
+public interface UserVoRepository extends ElasticsearchRepository<UserVo, Long> {
 
     // 根据名称和描述查找
-    Page<User> findByUsername(String username, Pageable pageable);
+    Page<UserVo> findByUsername(String username, Pageable pageable);
 }

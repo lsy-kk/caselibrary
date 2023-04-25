@@ -36,6 +36,20 @@ public interface TagService {
     ApiResult getTagListByPrefix(String prefix);
 
     /**
+     * 标签关键字搜索
+     * @param pageParams
+     * @param keyWords
+     * @return
+     */
+    ApiResult getSearchList(PageParams pageParams, String keyWords);
+
+    /**
+     * 更新tagVoRepository的后门接口
+     * @return
+     */
+    ApiResult tagVoRepositoryReload();
+
+    /**
      * 根据id获取tag
      * @param id
      * @return

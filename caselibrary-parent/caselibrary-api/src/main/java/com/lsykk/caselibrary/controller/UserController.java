@@ -30,6 +30,15 @@ public class UserController {
         user.setAuthority(authority);
         return userService.getUserList(pageParams, user);
     }
+
+    @GetMapping("/getSearchList")
+    public ApiResult getSearchList(@RequestParam(defaultValue = "1") Integer page,
+                                   @RequestParam(defaultValue = "10") Integer pageSize,
+                                   @RequestParam(defaultValue = "") String keyword){
+        PageParams pageParams = new PageParams(page, pageSize);
+        return userService.getSearchList(pageParams, keyword);
+    }
+
     @PostMapping("/insert")
     public ApiResult insert(@RequestBody User user){
         return userService.insertUser(user);

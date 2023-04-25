@@ -7,13 +7,14 @@ import com.lsykk.caselibrary.dao.mapper.CaseHeaderMapper;
 import com.lsykk.caselibrary.dao.mapper.CaseTagMapper;
 import com.lsykk.caselibrary.dao.pojo.CaseHeader;
 import com.lsykk.caselibrary.dao.pojo.CaseBody;
-import com.lsykk.caselibrary.dao.repository.CaseHeaderRepository;
+import com.lsykk.caselibrary.dao.repository.CaseHeaderVoRepository;
 import com.lsykk.caselibrary.service.*;
 import com.lsykk.caselibrary.utils.DateUtils;
 import com.lsykk.caselibrary.vo.*;
 import com.lsykk.caselibrary.vo.params.CaseParam;
 import com.lsykk.caselibrary.vo.params.PageParams;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
@@ -42,7 +43,7 @@ public class CaseServiceImpl implements CaseService {
     @Autowired
     private ThreadService threadService;
     @Autowired
-    private CaseHeaderRepository caseHeaderRepository;
+    private CaseHeaderVoRepository caseHeaderVoRepository;
     @Autowired
     private ElasticsearchRestTemplate elasticsearchRestTemplate;
     @Autowired
@@ -143,8 +144,17 @@ public class CaseServiceImpl implements CaseService {
     public ApiResult getSearchList(PageParams pageParams, String keyWords, String type){
         // 查询条件
         QueryBuilder queryBuilder = QueryBuilders.boolQuery()
-                .should(QueryBuilders.matchQuery("title", keyWords))
-                .should(QueryBuilders.matchQuery("summary", keyWords))
+                .must(QueryBuilders.boolQuery()
+                    .should(QueryBuilders.matchQuery("title", keyWords))
+                    .should(QueryBuilders.matchQuery("summary", keyWords))
+                    .should(QueryBuilders.nestedQuery(
+                            "tags",
+                            QueryBuilders.matchQuery("tags.name", keyWords),
+                            ScoreMode.Total))
+                    .should(QueryBuilders.nestedQuery(
+                            "author",
+                            QueryBuilders.matchQuery("author.username", keyWords),
+                            ScoreMode.Total)))
                 .filter(QueryBuilders.termQuery("visible",1))
                 .filter(QueryBuilders.termQuery("state",1))
                 .filter(QueryBuilders.termQuery("status",1));
@@ -160,7 +170,7 @@ public class CaseServiceImpl implements CaseService {
                         new HighlightBuilder.Field("summary"))
                 // 高亮显示颜色
                 .withHighlightBuilder(new HighlightBuilder().preTags("<span style='color:red'>").postTags("</span>"));
-          switch (type) {
+        switch (type) {
             case "hot":
                 // 热度值倒排
                 searchQueryBuilder.withSort(SortBuilders.fieldSort("hot").order(SortOrder.DESC));
@@ -184,13 +194,13 @@ public class CaseServiceImpl implements CaseService {
         }
         NativeSearchQuery searchQuery = searchQueryBuilder.build();
         // 查询
-        SearchHits<CaseHeader> search = elasticsearchRestTemplate.search(searchQuery, CaseHeader.class);
+        SearchHits<CaseHeaderVo> search = elasticsearchRestTemplate.search(searchQuery, CaseHeaderVo.class);
         // 查询结果（分页，只是一部分）
-        List<SearchHit<CaseHeader>> searchHits = search.getSearchHits();
+        List<SearchHit<CaseHeaderVo>> searchHits = search.getSearchHits();
         // 用于存放返回值的列表
-        List<CaseHeader> caseHeaderList = new ArrayList<>();
+        List<CaseHeaderVo> caseHeaderVoList = new ArrayList<>();
         // 遍历，高亮处理
-        for (SearchHit<CaseHeader> searchHit : searchHits) {
+        for (SearchHit<CaseHeaderVo> searchHit : searchHits) {
             // 高亮的内容
             Map<String, List<String>> highlightFields = searchHit.getHighlightFields();
             //将高亮的内容填充到content中
@@ -199,12 +209,23 @@ public class CaseServiceImpl implements CaseService {
             searchHit.getContent().setSummary(
                     highlightFields.get("summary") == null ? searchHit.getContent().getSummary() : highlightFields.get("summary").get(0));
             //放到实体类中
-            caseHeaderList.add(searchHit.getContent());
+            caseHeaderVoList.add(searchHit.getContent());
         }
         PageVo<CaseHeaderVo> pageVo = new PageVo();
-        pageVo.setRecordList(copyList(caseHeaderList, false, false));
+        pageVo.setRecordList(caseHeaderVoList);
         pageVo.setTotal(search.getTotalHits());
         return ApiResult.success(pageVo);
+    }
+
+    @Override
+    public ApiResult caseHeaderVoRepositoryReload(){
+        //分页查询 case数据库表
+        LambdaQueryWrapper<CaseHeader> queryWrapper = new LambdaQueryWrapper<>();
+        List<CaseHeader> caseList = caseHeaderMapper.selectList(queryWrapper);
+        for (CaseHeader caseHeader: caseList){
+            caseHeaderVoRepository.save(copy(caseHeader, false, false));
+        }
+        return ApiResult.success();
     }
 
     @Override
@@ -287,8 +308,6 @@ public class CaseServiceImpl implements CaseService {
         else {
             caseHeaderMapper.updateById(caseHeader);
         }
-        // ElasticSearch保存
-        caseHeaderRepository.save(caseHeader);
         // caseBodyVoLatest转caseBodyLatest，注意caseId
         CaseBody caseBodyLatest = copyBack(caseBodyVoLatest, caseHeader.getId());
         // 下面的更新是一整个事务
@@ -301,6 +320,8 @@ public class CaseServiceImpl implements CaseService {
         }
         // 最后是tag的添加
         tagService.updateCaseTagByCaseId(oldTags, newTags, caseHeader.getId());
+        // ElasticSearch保存
+        caseHeaderVoRepository.save(copy(caseHeader, false, false));
         // 返回案例id
         return ApiResult.success(caseHeader.getId());
     }
@@ -329,7 +350,7 @@ public class CaseServiceImpl implements CaseService {
         }
         caseHeader.setUpdateTime(new Timestamp(System.currentTimeMillis()));
         caseHeaderMapper.updateById(caseHeader);
-        elasticsearchRestTemplate.save(caseHeader);
+        caseHeaderVoRepository.save(copy(caseHeader, false, false));
         return ApiResult.success();
     }
     private List<CaseHeaderVo> copyList(List<CaseHeader> list, boolean isBody, boolean isComment){

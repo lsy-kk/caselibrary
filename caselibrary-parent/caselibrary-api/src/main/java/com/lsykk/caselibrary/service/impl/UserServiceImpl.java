@@ -6,18 +6,31 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lsykk.caselibrary.dao.mapper.UserMapper;
 import com.lsykk.caselibrary.dao.pojo.User;
+import com.lsykk.caselibrary.dao.repository.UserVoRepository;
 import com.lsykk.caselibrary.service.LoginService;
 import com.lsykk.caselibrary.service.UserService;
 import com.lsykk.caselibrary.vo.ApiResult;
 import com.lsykk.caselibrary.vo.ErrorCode;
+import com.lsykk.caselibrary.vo.PageVo;
 import com.lsykk.caselibrary.vo.UserVo;
 import com.lsykk.caselibrary.vo.params.PageParams;
 import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
+import org.springframework.data.elasticsearch.core.SearchHit;
+import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
+import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 
@@ -26,6 +39,10 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private UserVoRepository userVoRepository;
+    @Autowired
+    private ElasticsearchRestTemplate elasticsearchRestTemplate;
     @Autowired
     private LoginService loginService;
     @Autowired
@@ -64,6 +81,43 @@ public class UserServiceImpl implements UserService {
         return ApiResult.success(userList);
     }
 
+    @Override
+    public ApiResult getSearchList(PageParams pageParams, String keyWords){
+        QueryBuilder queryBuilder = QueryBuilders.boolQuery()
+                .must(QueryBuilders.boolQuery()
+                        .should(QueryBuilders.matchQuery("username", keyWords)))
+                .filter(QueryBuilders.termQuery("status",1));
+        NativeSearchQueryBuilder searchQueryBuilder = new NativeSearchQueryBuilder()
+                .withPageable(PageRequest.of(pageParams.getPage()-1, pageParams.getPageSize()))
+                .withQuery(queryBuilder)
+                .withHighlightFields(
+                        new HighlightBuilder.Field("username"))
+                .withHighlightBuilder(new HighlightBuilder().preTags("<span style='color:red'>").postTags("</span>"));
+        NativeSearchQuery searchQuery = searchQueryBuilder.build();
+        SearchHits<UserVo> search = elasticsearchRestTemplate.search(searchQuery, UserVo.class);
+        List<SearchHit<UserVo>> searchHits = search.getSearchHits();
+        List<UserVo> userVoList = new ArrayList<>();
+        for (SearchHit<UserVo> searchHit : searchHits) {
+            Map<String, List<String>> highlightFields = searchHit.getHighlightFields();
+            searchHit.getContent().setUsername(
+                    highlightFields.get("username") == null ? searchHit.getContent().getUsername() : highlightFields.get("username").get(0));
+            userVoList.add(searchHit.getContent());
+        }
+        PageVo<UserVo> pageVo = new PageVo();
+        pageVo.setRecordList(userVoList);
+        pageVo.setTotal(search.getTotalHits());
+        return ApiResult.success(pageVo);
+    }
+
+    @Override
+    public ApiResult userVoRepositoryReload(){
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        List<User> userList = userMapper.selectList(queryWrapper);
+        for (User user: userList){
+            userVoRepository.save(copy(user));
+        }
+        return ApiResult.success();
+    }
     @Override
     public User findUserById(Long id) {
         return userMapper.selectById(id);

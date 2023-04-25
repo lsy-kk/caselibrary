@@ -23,6 +23,19 @@ public interface UserService {
     ApiResult getUserList(PageParams pageParams, User user);
 
     /**
+     * 关键字搜索user
+     * @param pageParams
+     * @param keyWords
+     * @return
+     */
+    ApiResult getSearchList(PageParams pageParams, String keyWords);
+
+    /**
+     * 更新userVoRepository的后门接口
+     * @return
+     */
+    ApiResult userVoRepositoryReload();
+    /**
      * 根据user_id查找用户
      * @param id
      * @return

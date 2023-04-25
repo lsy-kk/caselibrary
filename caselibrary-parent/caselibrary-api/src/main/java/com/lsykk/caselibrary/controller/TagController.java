@@ -42,6 +42,14 @@ public class TagController {
         return tagService.getTagListByPrefix(prefix);
     }
 
+    @GetMapping("/getSearchList")
+    public ApiResult getSearchList(@RequestParam(defaultValue = "1") Integer page,
+                                   @RequestParam(defaultValue = "10") Integer pageSize,
+                                   @RequestParam(defaultValue = "") String keyword){
+        PageParams pageParams = new PageParams(page, pageSize);
+        return tagService.getSearchList(pageParams, keyword);
+    }
+
     @GetMapping("/findTagVoByCaseId")
     public ApiResult findTagVoByCaseId(@RequestParam Long caseId){
         return ApiResult.success(tagService.findTagVoByCaseId(caseId));

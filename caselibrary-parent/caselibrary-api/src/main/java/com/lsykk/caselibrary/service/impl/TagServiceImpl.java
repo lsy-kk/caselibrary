@@ -4,15 +4,24 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lsykk.caselibrary.dao.mapper.CaseTagMapper;
 import com.lsykk.caselibrary.dao.mapper.TagMapper;
-import com.lsykk.caselibrary.dao.pojo.CaseHeader;
 import com.lsykk.caselibrary.dao.pojo.CaseTag;
 import com.lsykk.caselibrary.dao.pojo.Tag;
+import com.lsykk.caselibrary.dao.repository.TagVoRepository;
 import com.lsykk.caselibrary.service.TagService;
 import com.lsykk.caselibrary.vo.*;
 import com.lsykk.caselibrary.vo.params.PageParams;
 import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
+import org.springframework.data.elasticsearch.core.SearchHit;
+import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
+import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -21,6 +30,10 @@ import java.util.*;
 public class TagServiceImpl implements TagService {
     @Autowired
     private TagMapper tagMapper;
+    @Autowired
+    private TagVoRepository tagVoRepository;
+    @Autowired
+    private ElasticsearchRestTemplate elasticsearchRestTemplate;
     @Autowired
     private CaseTagMapper caseTagMapper;
 
@@ -64,6 +77,48 @@ public class TagServiceImpl implements TagService {
         queryWrapper.orderByAsc(Tag::getId);
         List<Tag> tagList = tagMapper.selectList(queryWrapper);
         return ApiResult.success(tagList);
+    }
+
+    @Override
+    public ApiResult getSearchList(PageParams pageParams, String keyWords){
+        QueryBuilder queryBuilder = QueryBuilders.boolQuery()
+                .must(QueryBuilders.boolQuery()
+                        .should(QueryBuilders.matchQuery("name", keyWords))
+                        .should(QueryBuilders.matchQuery("description", keyWords)))
+                .filter(QueryBuilders.termQuery("status",1));
+        NativeSearchQueryBuilder searchQueryBuilder = new NativeSearchQueryBuilder()
+                .withPageable(PageRequest.of(pageParams.getPage()-1, pageParams.getPageSize()))
+                .withQuery(queryBuilder)
+                .withHighlightFields(
+                        new HighlightBuilder.Field("name"),
+                        new HighlightBuilder.Field("description"))
+                .withHighlightBuilder(new HighlightBuilder().preTags("<span style='color:red'>").postTags("</span>"));
+        NativeSearchQuery searchQuery = searchQueryBuilder.build();
+        SearchHits<TagVo> search = elasticsearchRestTemplate.search(searchQuery, TagVo.class);
+        List<SearchHit<TagVo>> searchHits = search.getSearchHits();
+        List<TagVo> tagVoList = new ArrayList<>();
+        for (SearchHit<TagVo> searchHit : searchHits) {
+            Map<String, List<String>> highlightFields = searchHit.getHighlightFields();
+            searchHit.getContent().setName(
+                    highlightFields.get("name") == null ? searchHit.getContent().getName() : highlightFields.get("name").get(0));
+            searchHit.getContent().setDescription(
+                    highlightFields.get("description") == null ? searchHit.getContent().getDescription() : highlightFields.get("description").get(0));
+            tagVoList.add(searchHit.getContent());
+        }
+        PageVo<TagVo> pageVo = new PageVo();
+        pageVo.setRecordList(tagVoList);
+        pageVo.setTotal(search.getTotalHits());
+        return ApiResult.success(pageVo);
+    }
+
+    @Override
+    public ApiResult tagVoRepositoryReload(){
+        LambdaQueryWrapper<Tag> queryWrapper = new LambdaQueryWrapper<>();
+        List<Tag> tagList = tagMapper.selectList(queryWrapper);
+        for (Tag tag: tagList){
+            tagVoRepository.save(copy(tag));
+        }
+        return ApiResult.success();
     }
 
     @Override

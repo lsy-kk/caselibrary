@@ -61,9 +61,10 @@ public class CaseController {
     @GetMapping("/getSearchList")
     public ApiResult getSearchList(@RequestParam(defaultValue = "1") Integer page,
                                    @RequestParam(defaultValue = "10") Integer pageSize,
-                                   @RequestParam(defaultValue = "") String keyword){
+                                   @RequestParam(defaultValue = "") String keyword,
+                                   @RequestParam(defaultValue = "hot") String type){
         PageParams pageParams = new PageParams(page, pageSize);
-        return caseService.getSearchList(pageParams, keyword);
+        return caseService.getSearchList(pageParams, keyword, type);
     }
 
     // 获取其他作者主页案例列表

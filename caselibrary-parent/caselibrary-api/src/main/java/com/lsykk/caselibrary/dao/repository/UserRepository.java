@@ -8,5 +8,5 @@ import org.springframework.data.elasticsearch.repository.ElasticsearchRepository
 public interface UserRepository extends ElasticsearchRepository<User, Long> {
 
     // 根据名称和描述查找
-    Page<User> findByName(String name, Pageable pageable);
+    Page<User> findByUsername(String username, Pageable pageable);
 }

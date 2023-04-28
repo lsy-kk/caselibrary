@@ -229,7 +229,17 @@ public class CaseServiceImpl implements CaseService {
     }
 
     @Override
-    public ApiResult getCaseHeaderVoByFavoritesId(PageParams pageParams, Long favoritesId){
+    public ApiResult getListByTagId(PageParams pageParams, Long tagId){
+        Page page = new Page(pageParams.getPage(), pageParams.getPageSize());
+        Page<CaseHeader> casePage = caseHeaderMapper.findCasesByTagId(page, tagId);
+        PageVo<CaseHeaderVo> pageVo = new PageVo();
+        pageVo.setRecordList(copyList(casePage.getRecords(), false, false));
+        pageVo.setTotal(casePage.getTotal());
+        return ApiResult.success(pageVo);
+    }
+
+    @Override
+    public ApiResult getListByFavoritesId(PageParams pageParams, Long favoritesId){
         Page page = new Page(pageParams.getPage(), pageParams.getPageSize());
         Page<CaseHeader> casePage = caseHeaderMapper.findCasesByFavoritesId(page, favoritesId);
         PageVo<CaseHeaderVo> pageVo = new PageVo();

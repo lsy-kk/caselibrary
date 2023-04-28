@@ -91,12 +91,20 @@ public class CaseController {
         return caseService.getMyList(pageParams, userId, visible, state, isBody, isComment);
     }
 
-    @GetMapping("/getCasesByFavoritesId")
-    public ApiResult getCasesByFavoritesId(@RequestParam(defaultValue = "1") Integer page,
-                                           @RequestParam(defaultValue = "10") Integer pageSize,
-                                           @RequestParam Long favoritesId){
+    @GetMapping("/getListByTagId")
+    public ApiResult getListByTagId(@RequestParam(defaultValue = "1") Integer page,
+                                    @RequestParam(defaultValue = "10") Integer pageSize,
+                                    @RequestParam Long tagId){
         PageParams pageParams = new PageParams(page, pageSize);
-        return caseService.getCaseHeaderVoByFavoritesId(pageParams, favoritesId);
+        return caseService.getListByTagId(pageParams, tagId);
+    }
+
+    @GetMapping("/getListByFavoritesId")
+    public ApiResult getListByFavoritesId(@RequestParam(defaultValue = "1") Integer page,
+                                          @RequestParam(defaultValue = "10") Integer pageSize,
+                                          @RequestParam Long favoritesId){
+        PageParams pageParams = new PageParams(page, pageSize);
+        return caseService.getListByFavoritesId(pageParams, favoritesId);
     }
 
     @GetMapping("/getCaseHeaderVo")

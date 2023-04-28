@@ -50,6 +50,13 @@ public interface TagService {
     ApiResult tagVoRepositoryReload();
 
     /**
+     * 根据id获取tagVo
+     * @param id
+     * @return
+     */
+    ApiResult findTagVoById(Long id);
+
+    /**
      * 根据id获取tag
      * @param id
      * @return

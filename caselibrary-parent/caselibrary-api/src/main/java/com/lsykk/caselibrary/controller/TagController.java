@@ -50,6 +50,11 @@ public class TagController {
         return tagService.getSearchList(pageParams, keyword);
     }
 
+    @GetMapping("/getTagVoById")
+    public ApiResult getTagVoById(@RequestParam Long id){
+        return tagService.findTagVoById(id);
+    }
+
     @GetMapping("/findTagVoByCaseId")
     public ApiResult findTagVoByCaseId(@RequestParam Long caseId){
         return ApiResult.success(tagService.findTagVoByCaseId(caseId));

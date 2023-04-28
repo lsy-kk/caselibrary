@@ -9,6 +9,7 @@ import com.lsykk.caselibrary.dao.pojo.User;
 import com.lsykk.caselibrary.dao.repository.UserVoRepository;
 import com.lsykk.caselibrary.service.LoginService;
 import com.lsykk.caselibrary.service.UserService;
+import com.lsykk.caselibrary.utils.DateUtils;
 import com.lsykk.caselibrary.vo.ApiResult;
 import com.lsykk.caselibrary.vo.ErrorCode;
 import com.lsykk.caselibrary.vo.PageVo;
@@ -18,6 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
@@ -212,12 +214,11 @@ public class UserServiceImpl implements UserService {
     }
 
     public UserVo copy(User user){
-        UserVo UserVo = new UserVo();
-        UserVo.setId(user.getId());
-        UserVo.setEmail(user.getEmail());
-        UserVo.setImage(user.getImage());
-        UserVo.setUsername(user.getUsername());
-        UserVo.setAuthority(user.getAuthority());
-        return UserVo;
+        UserVo userVo = new UserVo();
+        BeanUtils.copyProperties(user, userVo);
+        if (user.getCreateTime() != null ){
+            userVo.setCreateTime(DateUtils.getTime(user.getCreateTime()));
+        }
+        return userVo;
     }
 }

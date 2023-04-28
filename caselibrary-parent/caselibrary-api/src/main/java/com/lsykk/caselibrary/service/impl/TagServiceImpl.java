@@ -8,6 +8,7 @@ import com.lsykk.caselibrary.dao.pojo.CaseTag;
 import com.lsykk.caselibrary.dao.pojo.Tag;
 import com.lsykk.caselibrary.dao.repository.TagVoRepository;
 import com.lsykk.caselibrary.service.TagService;
+import com.lsykk.caselibrary.utils.DateUtils;
 import com.lsykk.caselibrary.vo.*;
 import com.lsykk.caselibrary.vo.params.PageParams;
 import org.apache.commons.lang3.StringUtils;
@@ -122,6 +123,11 @@ public class TagServiceImpl implements TagService {
     }
 
     @Override
+    public ApiResult findTagVoById(Long id){
+        return ApiResult.success(copy(findTagById(id)));
+    }
+
+    @Override
     public Tag findTagById(Long id){
         return tagMapper.selectById(id);
     }
@@ -206,6 +212,9 @@ public class TagServiceImpl implements TagService {
     private TagVo copy(Tag tag){
         TagVo tagVo = new TagVo();
         BeanUtils.copyProperties(tag, tagVo);
+        if (tag.getCreateTime() != null ){
+            tagVo.setCreateTime(DateUtils.getTime(tag.getCreateTime()));
+        }
         return tagVo;
     }
 

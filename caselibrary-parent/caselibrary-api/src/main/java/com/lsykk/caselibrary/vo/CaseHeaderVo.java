@@ -49,10 +49,8 @@ public class CaseHeaderVo {
     @Field(type = FieldType.Integer)
     private Integer status;
 
-    @Field(store = false)
     private String createTime;
 
-    @Field(store = false)
     private String updateTime;
 
     // 额外的可选参数

@@ -24,6 +24,8 @@ public class User {
 
     private Integer authority;
 
+    private Integer caseNumber;
+
     private Integer status;
 
     private Date createTime;

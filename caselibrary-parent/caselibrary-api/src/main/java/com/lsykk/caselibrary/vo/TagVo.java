@@ -20,9 +20,9 @@ public class TagVo {
 
     private String description;
 
-    private Integer status;
-
     private Integer caseNumber;
+
+    private Integer status;
 
     private String createTime;
 }

@@ -20,6 +20,8 @@ public class Tag {
 
     private String image;
 
+    private Integer caseNumber;
+
     private Integer status;
 
     private Date createTime;

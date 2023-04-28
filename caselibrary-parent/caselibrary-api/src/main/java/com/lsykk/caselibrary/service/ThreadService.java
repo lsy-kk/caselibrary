@@ -20,34 +20,6 @@ public class ThreadService {
 
     @PostConstruct
     public void init(){
-        // 初始化浏览量
-//        List<CaseHeader> caseHeaderList = caseHeaderMapper.selectList(new LambdaQueryWrapper<>());
-//        for (CaseHeader caseHeader : caseHeaderList) {
-//            String viewCountStr = (String) redisTemplate.opsForHash().get("Viewtimes", caseHeader.getId());
-//            if (viewCountStr == null){
-//                //初始化
-//                redisTemplate.opsForHash().put("Viewtimes", String.valueOf(caseHeader.getId()),
-//                        String.valueOf(caseHeader.getViewtimes()));
-//            }
-//            String CommentStr = (String) redisTemplate.opsForHash().get("Comment", String.valueOf(caseHeader.getId()));
-//            if (CommentStr == null){
-//                //初始化
-//                redisTemplate.opsForHash().put("Comment", String.valueOf(caseHeader.getId()),
-//                        String.valueOf(caseHeader.getComment()));
-//            }
-//            String FavoritesStr = (String) redisTemplate.opsForHash().get("Favorites", String.valueOf(caseHeader.getId()));
-//            if (FavoritesStr == null){
-//                //初始化
-//                redisTemplate.opsForHash().put("Favorites", String.valueOf(caseHeader.getId()),
-//                        String.valueOf(caseHeader.getFavorites()));
-//            }
-//            String ThumbStr = (String) redisTemplate.opsForHash().get("Thumb", String.valueOf(caseHeader.getId()));
-//            if (ThumbStr == null){
-//                //初始化
-//                redisTemplate.opsForHash().put("Thumb", String.valueOf(caseHeader.getId()),
-//                        String.valueOf(caseHeader.getThumb()));
-//            }
-//        }
     }
 
     @Autowired
@@ -71,7 +43,7 @@ public class ThreadService {
         if (!redisTemplate.opsForHash().hasKey("Comment", String.valueOf(id))){
             redisTemplate.opsForHash().put("Comment", String.valueOf(id), String.valueOf(0));
         }
-        redisTemplate.opsForHash().increment("Comment", String.valueOf(id),increase);
+        redisTemplate.opsForHash().increment("Comment", String.valueOf(id), increase);
     }
 
     @Async("taskExecutor")
@@ -79,7 +51,7 @@ public class ThreadService {
         if (!redisTemplate.opsForHash().hasKey("Favorites", String.valueOf(id))){
             redisTemplate.opsForHash().put("Favorites", String.valueOf(id), String.valueOf(0));
         }
-        redisTemplate.opsForHash().increment("Favorites", String.valueOf(id),increase);
+        redisTemplate.opsForHash().increment("Favorites", String.valueOf(id), increase);
     }
 
     @Async("taskExecutor")
@@ -87,6 +59,22 @@ public class ThreadService {
         if (!redisTemplate.opsForHash().hasKey("Thumb", String.valueOf(id))){
             redisTemplate.opsForHash().put("Thumb", String.valueOf(id), String.valueOf(0));
         }
-        redisTemplate.opsForHash().increment("Thumb", String.valueOf(id),increase);
+        redisTemplate.opsForHash().increment("Thumb", String.valueOf(id), increase);
+    }
+
+    @Async("taskExecutor")
+    public void updateTagCaseNumber(Long tagId, Integer increase) {
+        if (!redisTemplate.opsForHash().hasKey("Tag_CaseNumber", String.valueOf(tagId))){
+            redisTemplate.opsForHash().put("Tag_CaseNumber", String.valueOf(tagId), String.valueOf(0));
+        }
+        redisTemplate.opsForHash().increment("Tag_CaseNumber", String.valueOf(tagId), increase);
+    }
+
+    @Async("taskExecutor")
+    public void updateUserCaseNumber(Long userId, Integer increase) {
+        if (!redisTemplate.opsForHash().hasKey("User_CaseNumber", String.valueOf(userId))){
+            redisTemplate.opsForHash().put("User_CaseNumber", String.valueOf(userId), String.valueOf(0));
+        }
+        redisTemplate.opsForHash().increment("User_CaseNumber", String.valueOf(userId), increase);
     }
 }

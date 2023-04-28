@@ -22,9 +22,9 @@ public class UserVo {
 
     private Integer authority;
 
-    private Integer status;
-
     private Integer caseNumber;
+
+    private Integer status;
 
     private String createTime;
 }

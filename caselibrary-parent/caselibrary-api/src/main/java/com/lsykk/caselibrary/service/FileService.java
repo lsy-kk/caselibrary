@@ -44,11 +44,4 @@ public interface FileService {
      */
     ApiResult deleteFile(String filePath);
 
-
-    /**
-     * 写content到md文件中，返回文件地址
-     * @param content
-     * @return
-     */
-    String exportMarkdownFile(String content);
 }

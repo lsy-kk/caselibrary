@@ -156,27 +156,4 @@ public class FileServiceImpl implements FileService {
         }
         return ApiResult.fail(ErrorCode.CANNOT_DELETE_FILE);
     }
-
-    @Override
-    public String exportMarkdownFile(String content) {
-        // 以yyyyMMdd格式获取当前时间
-        String format = DateUtils.getTimeSimple();
-        String fileName = UUID.randomUUID() + "-" + format + ".md";
-        // 保存路径。默认定位到的当前用户目录("user.dir")（即工程根目录），为每一天创建一个文件夹
-        String savePath = System.getProperty("user.dir") + "\\" + "files" + "\\" + "markdown";
-        // 保存文件的文件夹
-        File folder = new File(savePath);
-        // 判断文件夹是否存在，不存在则创建文件夹。若创建文件夹失败，返回失败信息。
-        if (!folder.exists() && !folder.mkdirs()){
-            ApiResult.fail(ErrorCode.File_Upload_Error);
-        }
-        String filepath = savePath + "\\" + fileName;
-        try (FileWriter fileWriter = new FileWriter(filepath)) {
-            fileWriter.write(content);
-        }
-        catch (Exception exception){
-            System.out.println("Error: " + exception.getMessage());
-        }
-        return filepath;
-    }
 }

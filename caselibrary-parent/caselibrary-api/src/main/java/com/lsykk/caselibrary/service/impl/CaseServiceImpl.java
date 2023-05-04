@@ -110,6 +110,29 @@ public class CaseServiceImpl implements CaseService {
     }
 
     @Override
+    public ApiResult getHotList(PageParams pageParams){
+        QueryBuilder queryBuilder = QueryBuilders.boolQuery()
+                .filter(QueryBuilders.termQuery("visible",1))
+                .filter(QueryBuilders.termQuery("state",1))
+                .filter(QueryBuilders.termQuery("status",1));
+        NativeSearchQueryBuilder searchQueryBuilder = new NativeSearchQueryBuilder()
+                .withPageable(PageRequest.of(pageParams.getPage()-1, pageParams.getPageSize()))
+                .withQuery(queryBuilder)
+                .withSort(SortBuilders.fieldSort("hot").order(SortOrder.DESC));
+        NativeSearchQuery searchQuery = searchQueryBuilder.build();
+        SearchHits<CaseHeaderVo> search = elasticsearchRestTemplate.search(searchQuery, CaseHeaderVo.class);
+        List<SearchHit<CaseHeaderVo>> searchHits = search.getSearchHits();
+        List<CaseHeaderVo> caseHeaderVoList = new ArrayList<>();
+        for (SearchHit<CaseHeaderVo> searchHit : searchHits) {
+            caseHeaderVoList.add(searchHit.getContent());
+        }
+        PageVo<CaseHeaderVo> pageVo = new PageVo();
+        pageVo.setRecordList(caseHeaderVoList);
+        pageVo.setTotal(search.getTotalHits());
+        return ApiResult.success(pageVo);
+    }
+
+    @Override
     public ApiResult getOtherAuthorList(PageParams pageParams, Long userId, boolean isBody, boolean isComment){
         //分页查询 case数据库表
         Page<CaseHeader> page = new Page<>(pageParams.getPage(), pageParams.getPageSize());

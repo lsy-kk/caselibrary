@@ -1,5 +1,6 @@
 package com.lsykk.caselibrary.controller;
 
+import com.lsykk.caselibrary.common.cache.Cache;
 import com.lsykk.caselibrary.dao.pojo.CaseBody;
 import com.lsykk.caselibrary.dao.pojo.CaseHeader;
 import com.lsykk.caselibrary.service.CaseService;
@@ -53,8 +54,11 @@ public class CaseController {
 
     // 获取热度排序列表
     @GetMapping("/getHotList")
-    public ApiResult getHotList(){
-        return ApiResult.success();
+    @Cache(expire = 5 * 60 * 1000,name = "hot_caseList")
+    public ApiResult getHotList(@RequestParam(defaultValue = "1") Integer page,
+                                @RequestParam(defaultValue = "10") Integer pageSize){
+        PageParams pageParams = new PageParams(page, pageSize);
+        return caseService.getHotList(pageParams);
     }
 
     // 获取搜索关键字排序列表

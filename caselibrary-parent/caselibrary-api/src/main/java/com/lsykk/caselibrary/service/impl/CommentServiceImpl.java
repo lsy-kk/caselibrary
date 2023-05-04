@@ -4,10 +4,9 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lsykk.caselibrary.dao.mapper.CommentMapper;
+import com.lsykk.caselibrary.dao.pojo.CaseHeader;
 import com.lsykk.caselibrary.dao.pojo.Comment;
-import com.lsykk.caselibrary.service.CommentService;
-import com.lsykk.caselibrary.service.ThreadService;
-import com.lsykk.caselibrary.service.UserService;
+import com.lsykk.caselibrary.service.*;
 import com.lsykk.caselibrary.utils.DateUtils;
 import com.lsykk.caselibrary.vo.*;
 import com.lsykk.caselibrary.vo.params.PageParams;
@@ -32,6 +31,8 @@ public class CommentServiceImpl implements CommentService {
     private CommentMapper commentMapper;
     @Autowired
     private UserService userService;
+    @Autowired
+    private NoticeService noticeService;
 
     @Override
     public ApiResult getCommentList(PageParams pageParams, Long id, Long authorId, Long caseId, Integer status){
@@ -72,6 +73,7 @@ public class CommentServiceImpl implements CommentService {
         }
         commentMapper.insertAndGetId(comment);
         threadService.updateCaseComment(comment.getCaseId(), 1);
+        noticeService.sendMessageByComment(comment);
         return ApiResult.success(getCommentVoById(comment.getId()));
     }
 

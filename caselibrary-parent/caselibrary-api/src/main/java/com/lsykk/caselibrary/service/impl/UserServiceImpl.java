@@ -8,6 +8,7 @@ import com.lsykk.caselibrary.dao.mapper.UserMapper;
 import com.lsykk.caselibrary.dao.pojo.User;
 import com.lsykk.caselibrary.dao.repository.UserVoRepository;
 import com.lsykk.caselibrary.service.LoginService;
+import com.lsykk.caselibrary.service.NoticeService;
 import com.lsykk.caselibrary.service.UserService;
 import com.lsykk.caselibrary.utils.DateUtils;
 import com.lsykk.caselibrary.vo.ApiResult;
@@ -47,6 +48,8 @@ public class UserServiceImpl implements UserService {
     private ElasticsearchRestTemplate elasticsearchRestTemplate;
     @Autowired
     private LoginService loginService;
+    @Autowired
+    private NoticeService noticeService;
     @Autowired
     private RedisTemplate<String,String> redisTemplate;
 
@@ -127,13 +130,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserVo findUserVoById(Long id) {
-        String userVoJson = redisTemplate.opsForValue().get("UserVo_" + id);
-        if (StringUtils.isNotBlank(userVoJson)){
-            return JSON.parseObject(userVoJson, UserVo.class);
-        }
-        UserVo userVo = copy(userMapper.selectById(id));
-        redisTemplate.opsForValue().set("UserVo_" + id, JSON.toJSONString(userVo), 1, TimeUnit.HOURS);
-        return userVo;
+        return copy(userMapper.selectById(id));
     }
 
     @Override

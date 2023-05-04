@@ -40,18 +40,11 @@ public interface CaseService {
                                   Integer state, Integer status);
 
     /**
-     * 获取最近的案例
-     * @param pageParams
-     * @return
-     */
-    //ApiResult getLatestList(PageParams pageParams);
-
-    /**
      * 获取最热的案例
      * @param pageParams
      * @return
      */
-    //ApiResult getHotList(PageParams pageParams);
+    ApiResult getHotList(PageParams pageParams);
 
     /**
      * 获取其他用户的案例列表（visible=1，state=1，status=1）

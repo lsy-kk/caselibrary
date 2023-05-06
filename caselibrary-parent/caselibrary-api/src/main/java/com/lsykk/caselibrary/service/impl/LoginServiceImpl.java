@@ -134,7 +134,7 @@ public class LoginServiceImpl implements LoginService {
         User user = new User();
         user.setEmail(loginParam.getEmail());
         // 默认头像
-        user.setImage("http://kkysl.free.svipss.top\\image\\default.jpg");
+        user.setImage("http://case-lib.test.upcdn.net/images/848bd165-48e9-4788-92d7-91b7fc1b169d.jpg");
         // 随机用户名
         user.setUsername("user_" + MailUtils.getRandomCode(8));
         // 检查密码是否为空，为空表示快速登录（特殊值）

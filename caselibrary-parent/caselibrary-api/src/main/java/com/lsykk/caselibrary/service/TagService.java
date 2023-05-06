@@ -98,12 +98,4 @@ public interface TagService {
      * @return
      */
     List<TagVo> findTagVoByCaseId(Long caseId);
-
-    /**
-     * 根据案例id，更新案例标签
-     * @param tagIds
-     * @param caseId
-     * @return
-     */
-    ApiResult updateTagByCaseId(List<Long> tagIds, Long caseId);
 }

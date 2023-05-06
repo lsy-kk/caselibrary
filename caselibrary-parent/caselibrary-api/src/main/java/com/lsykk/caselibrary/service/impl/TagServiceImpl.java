@@ -139,6 +139,7 @@ public class TagServiceImpl implements TagService {
         }
         tag.setStatus(1);
         tagMapper.insert(tag);
+        tagVoRepository.save(copy(tag));
         return ApiResult.success();
     }
 
@@ -148,6 +149,7 @@ public class TagServiceImpl implements TagService {
             return ApiResult.fail(ErrorCode.PARAMS_ERROR.getCode(), ErrorCode.PARAMS_ERROR.getMsg());
         }
         tagMapper.updateById(tag);
+        tagVoRepository.save(copy(tag));
         return ApiResult.success();
     }
 
@@ -194,11 +196,6 @@ public class TagServiceImpl implements TagService {
     public List<TagVo> findTagVoByCaseId(Long caseId){
         List<Tag> list = tagMapper.findTagsByCaseId(caseId);
         return copyList(list);
-    }
-
-    @Override
-    public ApiResult updateTagByCaseId(List<Long> tagIds, Long caseId){
-        return ApiResult.success();
     }
 
     private List<TagVo> copyList(List<Tag> tagList){

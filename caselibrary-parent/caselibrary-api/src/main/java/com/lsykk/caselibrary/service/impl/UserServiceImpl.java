@@ -155,6 +155,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void saveUser(User user) {
         userMapper.insert(user);
+        userVoRepository.save(copy(user));
     }
 
     @Override
@@ -184,6 +185,7 @@ public class UserServiceImpl implements UserService {
         // 不能用于更新密码
         user.setPassword(null);
         userMapper.updateById(user);
+        userVoRepository.save(copy(user));
         return ApiResult.success();
     }
 

@@ -13,6 +13,10 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +31,8 @@ public class LoginServiceImpl implements LoginService {
     private UserService userService;
     @Autowired
     private RedisTemplate<String,String> redisTemplate;
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
     // 加密盐
     private static final String slat = "kkysl!?226";
@@ -43,6 +49,11 @@ public class LoginServiceImpl implements LoginService {
         if (user == null){
             return ApiResult.fail(ErrorCode.ACCOUNT_PWD_NOT_EXIST.getCode(),ErrorCode.ACCOUNT_PWD_NOT_EXIST.getMsg());
         }
+
+        UsernamePasswordAuthenticationToken authenticationToken =
+                new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword());
+        Authentication authentication = authenticationManager.authenticate(authenticationToken);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
         /* 生成token，redis缓存备用*/
         String token = JWTUtils.createToken(user.getId());
         redisTemplate.opsForValue().set("TOKEN_"+token, JSON.toJSONString(user),1, TimeUnit.DAYS);
@@ -165,9 +176,12 @@ public class LoginServiceImpl implements LoginService {
     public User reLogin(String token){
         User user = checkToken(token);
         User newUser = userService.findUserById(user.getId());
-        // 更新token对应的信息，有效期设置为剩余时间（毫秒单位）
-        Long resTime = redisTemplate.getExpire("TOKEN_" + token);
-        redisTemplate.opsForValue().set("TOKEN_"+token, JSON.toJSONString(newUser), resTime);
+        if (StringUtils.isNotBlank(redisTemplate.opsForValue().get("TOKEN_"+token))){
+            // 更新token对应的信息，有效期设置为剩余时间（毫秒单位）
+            Long resTime = redisTemplate.getExpire("TOKEN_" + token);
+            redisTemplate.delete("TOKEN_"+token);
+            redisTemplate.opsForValue().set("TOKEN_"+token, JSON.toJSONString(newUser), resTime);
+        }
         return newUser;
     }
 }

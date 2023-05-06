@@ -2,6 +2,7 @@ package com.lsykk.caselibrary.service;
 
 import com.lsykk.caselibrary.dao.pojo.User;
 import com.lsykk.caselibrary.vo.ApiResult;
+import com.lsykk.caselibrary.vo.UserVo;
 import com.lsykk.caselibrary.vo.params.LoginParam;
 
 public interface LoginService {
@@ -56,9 +57,9 @@ public interface LoginService {
     User checkToken(String token);
 
     /**
-     * 更新token对应的User信息
+     * 更新token对应的UserVo信息
      * @param token
      * @return
      */
-    User reLogin(String token);
+    UserVo reLogin(String token);
 }

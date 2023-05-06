@@ -4,13 +4,16 @@ import com.alibaba.fastjson.JSON;
 import com.lsykk.caselibrary.dao.pojo.User;
 import com.lsykk.caselibrary.service.LoginService;
 import com.lsykk.caselibrary.service.UserService;
+import com.lsykk.caselibrary.utils.DateUtils;
 import com.lsykk.caselibrary.utils.JWTUtils;
 import com.lsykk.caselibrary.utils.MailUtils;
 import com.lsykk.caselibrary.vo.ApiResult;
 import com.lsykk.caselibrary.vo.ErrorCode;
+import com.lsykk.caselibrary.vo.UserVo;
 import com.lsykk.caselibrary.vo.params.LoginParam;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -173,7 +176,7 @@ public class LoginServiceImpl implements LoginService {
     }
 
     @Override
-    public User reLogin(String token){
+    public UserVo reLogin(String token){
         User user = checkToken(token);
         User newUser = userService.findUserById(user.getId());
         if (StringUtils.isNotBlank(redisTemplate.opsForValue().get("TOKEN_"+token))){
@@ -182,6 +185,15 @@ public class LoginServiceImpl implements LoginService {
             redisTemplate.delete("TOKEN_"+token);
             redisTemplate.opsForValue().set("TOKEN_"+token, JSON.toJSONString(newUser), resTime);
         }
-        return newUser;
+        return copy(newUser);
+    }
+
+    public UserVo copy(User user){
+        UserVo userVo = new UserVo();
+        BeanUtils.copyProperties(user, userVo);
+        if (user.getCreateTime() != null ){
+            userVo.setCreateTime(DateUtils.getTime(user.getCreateTime()));
+        }
+        return userVo;
     }
 }

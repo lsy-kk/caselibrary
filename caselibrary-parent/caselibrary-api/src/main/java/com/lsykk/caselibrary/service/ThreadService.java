@@ -1,6 +1,8 @@
 package com.lsykk.caselibrary.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.lsykk.caselibrary.dao.mapper.CaseHeaderMapper;;
+import com.lsykk.caselibrary.dao.pojo.CaseHeader;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import java.util.List;
 
 @Slf4j
 @Component
@@ -20,6 +23,23 @@ public class ThreadService {
 
     @PostConstruct
     public void init(){
+        // 初始化，载入所有case
+        List<CaseHeader> caseHeaderList = caseHeaderMapper.selectList(new LambdaQueryWrapper<>());
+        for (CaseHeader caseHeader: caseHeaderList){
+            String id = String.valueOf(caseHeader.getId());
+            if (!redisTemplate.opsForHash().hasKey("Viewtimes", id)){
+                redisTemplate.opsForHash().put("Viewtimes", id, String.valueOf(0));
+            }
+            if (!redisTemplate.opsForHash().hasKey("Comment", id)){
+                redisTemplate.opsForHash().put("Comment", id, String.valueOf(0));
+            }
+            if (!redisTemplate.opsForHash().hasKey("Favorites", id)){
+                redisTemplate.opsForHash().put("Favorites", id, String.valueOf(0));
+            }
+            if (!redisTemplate.opsForHash().hasKey("Thumb", id)){
+                redisTemplate.opsForHash().put("Thumb", id, String.valueOf(0));
+            }
+        }
     }
 
     @Autowired

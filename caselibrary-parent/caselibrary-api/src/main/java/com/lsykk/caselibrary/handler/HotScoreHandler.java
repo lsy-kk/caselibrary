@@ -28,10 +28,6 @@ public class HotScoreHandler {
     private StringRedisTemplate redisTemplate;
     @Autowired
     private CaseService caseService;
-    @Autowired
-    private TagService tagService;
-    @Autowired
-    private UserService userService;
 
     @Scheduled(cron = "0 0/5 * * * *") // 每5分钟触发一次
     //@Scheduled(cron = "0 0 3 * * *")
@@ -48,12 +44,14 @@ public class HotScoreHandler {
             int viewtimes = Integer.parseInt(value.toString());
             caseHeader.setViewtimes(caseHeader.getViewtimes() + viewtimes);
             redisTemplate.opsForHash().delete("Viewtimes", key);
+            redisTemplate.opsForHash().put("Viewtimes", key, String.valueOf(0));
             // 更新comment，并清空redis中数据
             value = redisTemplate.opsForHash().get("Comment", key);
             int comment = 0;
             if (value != null){
                 comment = Integer.parseInt(value.toString());
                 redisTemplate.opsForHash().delete("Comment", key);
+                redisTemplate.opsForHash().put("Comment", key, String.valueOf(0));
             }
             caseHeader.setComment(caseHeader.getComment() + comment);
             // 更新favorites，并清空redis中数据
@@ -62,6 +60,7 @@ public class HotScoreHandler {
             if (value != null){
                 favorites = Integer.parseInt(value.toString());
                 redisTemplate.opsForHash().delete("Favorites", key);
+                redisTemplate.opsForHash().put("Favorites", key, String.valueOf(0));
             }
             caseHeader.setFavorites(caseHeader.getFavorites() + favorites);
             // 更新thumb，并清空redis中数据
@@ -70,6 +69,7 @@ public class HotScoreHandler {
             if (value != null){
                 thumb = Integer.parseInt(value.toString());
                 redisTemplate.opsForHash().delete("Thumb", key);
+                redisTemplate.opsForHash().put("Thumb", key, String.valueOf(0));
             }
             caseHeader.setThumb(caseHeader.getThumb() + thumb);
             // 更新热度
@@ -82,41 +82,5 @@ public class HotScoreHandler {
             caseService.updateCaseHeader(caseHeader);
         }
         log.info("=====>>>>> 同步案例热度数据结束  {}",new DateTime().toString("yyyy-MM-dd HH:mm:ss"));
-    }
-
-    @Scheduled(cron = "0 0/5 * * * *") // 每5分钟触发一次
-    //@Scheduled(cron = "0 0 3 * * *")
-    @Async("taskExecutor")
-    public void updateTagCaseNumber() {
-        log.info("=====>>>>> 同步标签下案例数量开始执行  {}",new DateTime().toString("yyyy-MM-dd HH:mm:ss"));
-        Set<Object>  keys = redisTemplate.opsForHash().keys("Tag_CaseNumber");
-        for (Object key: keys) {
-            Long tagId = Long.parseLong(key.toString());
-            Tag tag = tagService.findTagById(tagId);
-            Object value = redisTemplate.opsForHash().get("Tag_CaseNumber", key);
-            int caseNumber = Integer.parseInt(value.toString());
-            tag.setCaseNumber(tag.getCaseNumber() + caseNumber);
-            tagService.updateTag(tag);
-            redisTemplate.opsForHash().delete("Tag_CaseNumber", key);
-        }
-        log.info("=====>>>>> 同步标签下案例数量结束  {}",new DateTime().toString("yyyy-MM-dd HH:mm:ss"));
-    }
-
-    @Scheduled(cron = "0 0/5 * * * *") // 每5分钟触发一次
-    //@Scheduled(cron = "0 0 3 * * *")
-    @Async("taskExecutor")
-    public void updateUserCaseNumber() {
-        log.info("=====>>>>> 同步用户下案例数量开始执行  {}",new DateTime().toString("yyyy-MM-dd HH:mm:ss"));
-        Set<Object>  keys = redisTemplate.opsForHash().keys("User_CaseNumber");
-        for (Object key: keys) {
-            Long userId = Long.parseLong(key.toString());
-            User user = userService.findUserById(userId);
-            Object value = redisTemplate.opsForHash().get("User_CaseNumber", key);
-            int caseNumber = Integer.parseInt(value.toString());
-            user.setCaseNumber(user.getCaseNumber() + caseNumber);
-            userService.updateUser(user);
-            redisTemplate.opsForHash().delete("User_CaseNumber", key);
-        }
-        log.info("=====>>>>> 同步用户下案例数量结束  {}",new DateTime().toString("yyyy-MM-dd HH:mm:ss"));
     }
 }

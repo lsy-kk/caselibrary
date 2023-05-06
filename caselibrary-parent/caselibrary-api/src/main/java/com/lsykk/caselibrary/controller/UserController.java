@@ -1,11 +1,13 @@
 package com.lsykk.caselibrary.controller;
 
 import com.lsykk.caselibrary.dao.pojo.User;
+import com.lsykk.caselibrary.service.AuthorizeService;
 import com.lsykk.caselibrary.service.LoginService;
 import com.lsykk.caselibrary.service.UserService;
 import com.lsykk.caselibrary.vo.ApiResult;
 import com.lsykk.caselibrary.vo.params.PageParams;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 // 使用json数据进行交互
@@ -17,6 +19,7 @@ public class UserController {
     @Autowired
     private LoginService loginService;
 
+    @PreAuthorize("hasAuthority('admin')")
     @GetMapping("/getList")
     public ApiResult getUserList(@RequestParam(defaultValue = "1") Integer page,
                                  @RequestParam(defaultValue = "10") Integer pageSize,
@@ -39,16 +42,19 @@ public class UserController {
         return userService.getSearchList(pageParams, keyword);
     }
 
+    @PreAuthorize("hasAuthority('admin')")
     @PostMapping("/insert")
     public ApiResult insert(@RequestBody User user){
         return userService.insertUser(user);
     }
 
+    @PreAuthorize("@authorizeService.checkUser(#user) or hasAuthority('admin')")
     @PutMapping("/update")
     public ApiResult update(@RequestBody User user){
         return userService.updateUser(user);
     }
 
+    @PreAuthorize("@authorizeService.checkUser(#user) or hasAuthority('admin')")
     @PutMapping("/updatePassword")
     public ApiResult updatePassword(@RequestBody User user){
         return userService.updatePassword(user);

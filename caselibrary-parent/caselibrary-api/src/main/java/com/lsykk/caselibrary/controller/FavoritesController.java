@@ -6,6 +6,7 @@ import com.lsykk.caselibrary.service.FavoritesService;
 import com.lsykk.caselibrary.vo.ApiResult;
 import com.lsykk.caselibrary.vo.params.PageParams;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,6 +18,7 @@ public class FavoritesController {
     @Autowired
     private FavoritesService favoritesService;
 
+    @PreAuthorize("hasAuthority('admin')")
     @GetMapping("/getFavoritesList")
     public ApiResult getFavoritesList(@RequestParam(defaultValue = "1") Integer page,
                                       @RequestParam(defaultValue = "10") Integer pageSize,
@@ -47,16 +49,19 @@ public class FavoritesController {
         return favoritesService.getUserAttitudeVo(caseId, userId);
     }
 
+    @PreAuthorize("@authorizeService.checkFavorites(#favorites)")
     @PostMapping("/insert")
     public ApiResult insert(@RequestBody Favorites favorites){
         return favoritesService.insertFavorites(favorites);
     }
 
+    @PreAuthorize("@authorizeService.checkFavorites(#favorites)")
     @PutMapping("/update")
     public ApiResult update(@RequestBody Favorites favorites){
         return favoritesService.updateFavorites(favorites);
     }
 
+    @PreAuthorize("@authorizeService.checkFavorites(#favorites) or hasAuthority('admin')")
     @GetMapping("/changeStatus")
     public ApiResult changeStatus(@RequestParam Long favoritesId, @RequestParam Integer status){
         return favoritesService.changeFavoritesStatus(favoritesId, status);

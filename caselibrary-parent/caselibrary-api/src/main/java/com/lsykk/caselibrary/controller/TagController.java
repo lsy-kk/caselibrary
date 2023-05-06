@@ -5,6 +5,7 @@ import com.lsykk.caselibrary.service.TagService;
 import com.lsykk.caselibrary.vo.ApiResult;
 import com.lsykk.caselibrary.vo.params.PageParams;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,6 +17,7 @@ public class TagController {
     @Autowired
     private TagService tagService;
 
+    @PreAuthorize("hasAuthority('admin')")
     @GetMapping("/getList")
     public ApiResult getTagList(@RequestParam(defaultValue = "1") Integer page,
                                 @RequestParam(defaultValue = "10") Integer pageSize,
@@ -60,16 +62,13 @@ public class TagController {
         return ApiResult.success(tagService.findTagVoByCaseId(caseId));
     }
 
-    @PostMapping("/updateTagVoByCaseId")
-    public ApiResult updateTagVoByCaseId(List<Long> tagIds, Long caseId){
-        return ApiResult.success();
-    }
-
+    @PreAuthorize("hasAuthority('admin')")
     @PostMapping("/insert")
     public ApiResult insert(@RequestBody Tag tag){
         return tagService.insertTag(tag);
     }
 
+    @PreAuthorize("hasAuthority('admin')")
     @PutMapping("/update")
     public ApiResult update(@RequestBody Tag tag){
         return tagService.updateTag(tag);

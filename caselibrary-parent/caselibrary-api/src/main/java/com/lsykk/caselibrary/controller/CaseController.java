@@ -10,6 +10,7 @@ import com.lsykk.caselibrary.vo.params.CaseParam;
 import com.lsykk.caselibrary.vo.params.PageParams;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -40,6 +41,7 @@ public class CaseController {
     }
 
     // 分页、根据条件获取所有案例列表
+    @PreAuthorize("hasAuthority('admin')")
     @GetMapping("/getCaseList")
     public ApiResult getCaseList(@RequestParam(defaultValue = "1") Integer page,
                                  @RequestParam(defaultValue = "10") Integer pageSize,
@@ -119,6 +121,7 @@ public class CaseController {
     }
 
 
+    @PreAuthorize("@authorizeService.checkCaseParam(#caseParam) and hasAuthority('teacher')")
     @PostMapping("/submitCaseParam")
     public ApiResult submitCaseParam(@RequestBody CaseParam caseParam){
         return caseService.submitCaseParam(caseParam);
@@ -129,6 +132,7 @@ public class CaseController {
         return caseService.getCaseParamById(caseId);
     }
 
+    @PreAuthorize("hasAuthority('admin')")
     @PutMapping("/update")
     public ApiResult updateCaseHeader(@RequestBody CaseHeader caseHeader){
         return caseService.updateCaseHeader(caseHeader);

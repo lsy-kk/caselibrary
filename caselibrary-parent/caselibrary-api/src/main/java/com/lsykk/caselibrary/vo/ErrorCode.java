@@ -14,7 +14,8 @@ public enum ErrorCode {
     CANNOT_FIND_DATA("30001","找不到数据"),
     CANNOT_SENT_EMAIL("30002","发送失败"),
     CANNOT_DELETE_FILE("30003","无法删除云存储中的文件"),
-    NO_PERMISSION("70001","无访问权限"),
+    NO_PERMISSION("40001","无访问权限，请先登录"),
+    NO_ENOUGH_PERMISSION("40002","访问权限不足"),
     SESSION_TIME_OUT("90001","会话超时"),
     NO_LOGIN("90002","未登录"),;
 

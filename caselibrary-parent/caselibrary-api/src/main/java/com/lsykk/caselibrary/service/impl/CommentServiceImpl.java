@@ -95,13 +95,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public CommentVo getCommentVoById(Long id){
-        String commentJson = redisTemplate.opsForValue().get("CommentVo_" + id);
-        if (StringUtils.isNotBlank(commentJson)){
-            return JSON.parseObject(commentJson, CommentVo.class);
-        }
-        CommentVo commentVo = copy(getCommentById(id));
-        redisTemplate.opsForValue().set("CommentVo_" + id, JSON.toJSONString(commentVo), 1, TimeUnit.HOURS);
-        return commentVo;
+        return copy(getCommentById(id));
     }
 
     private List<CommentVo> getCommentVoListByParentId(Long id){

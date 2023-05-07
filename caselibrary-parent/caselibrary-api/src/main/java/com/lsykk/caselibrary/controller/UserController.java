@@ -1,5 +1,6 @@
 package com.lsykk.caselibrary.controller;
 
+import com.lsykk.caselibrary.common.aop.LogAnnotation;
 import com.lsykk.caselibrary.dao.pojo.User;
 import com.lsykk.caselibrary.service.AuthorizeService;
 import com.lsykk.caselibrary.service.LoginService;
@@ -21,6 +22,7 @@ public class UserController {
 
     @PreAuthorize("hasAuthority('admin')")
     @GetMapping("/getList")
+    @LogAnnotation(module="用户",operator="管理员获取用户列表")
     public ApiResult getUserList(@RequestParam(defaultValue = "1") Integer page,
                                  @RequestParam(defaultValue = "10") Integer pageSize,
                                  @RequestParam(required = false)  Long id,
@@ -35,6 +37,7 @@ public class UserController {
     }
 
     @GetMapping("/getSearchList")
+    @LogAnnotation(module="用户",operator="获取搜索用户列表")
     public ApiResult getSearchList(@RequestParam(defaultValue = "1") Integer page,
                                    @RequestParam(defaultValue = "10") Integer pageSize,
                                    @RequestParam(defaultValue = "") String keyword){
@@ -44,28 +47,33 @@ public class UserController {
 
     @PreAuthorize("hasAuthority('admin')")
     @PostMapping("/insert")
+    @LogAnnotation(module="用户",operator="新增用户")
     public ApiResult insert(@RequestBody User user){
         return userService.insertUser(user);
     }
 
     @PreAuthorize("@authorizeService.checkUser(#user) or hasAuthority('admin')")
     @PutMapping("/update")
+    @LogAnnotation(module="用户",operator="更新用户信息")
     public ApiResult update(@RequestBody User user){
         return userService.updateUser(user);
     }
 
     @PreAuthorize("@authorizeService.checkUser(#user) or hasAuthority('admin')")
     @PutMapping("/updatePassword")
+    @LogAnnotation(module="用户",operator="更新用户密码信息")
     public ApiResult updatePassword(@RequestBody User user){
         return userService.updatePassword(user);
     }
 
     @GetMapping("/getUserVoByToken")
+    @LogAnnotation(module="用户",operator="根据TOKEN获取用户")
     public ApiResult getUserVoByToken(@RequestHeader("Authorization") String token){
         return userService.findUserVoByToken(token);
     }
 
     @GetMapping("/getUserVoById")
+    @LogAnnotation(module="用户",operator="根据ID获取用户")
     public ApiResult getUserVoById(@RequestParam Long id){
         return ApiResult.success(userService.findUserVoById(id));
     }

@@ -1,5 +1,6 @@
 package com.lsykk.caselibrary.controller;
 
+import com.lsykk.caselibrary.common.aop.LogAnnotation;
 import com.lsykk.caselibrary.dao.pojo.CaseHeader;
 import com.lsykk.caselibrary.dao.pojo.Comment;
 import com.lsykk.caselibrary.service.CommentService;
@@ -18,6 +19,7 @@ public class CommentController {
 
     @PreAuthorize("hasAuthority('admin')")
     @GetMapping("/getCommentList")
+    @LogAnnotation(module="评论",operator="管理员获取评论列表")
     public ApiResult getCommentList(@RequestParam(defaultValue = "1") Integer page,
                                     @RequestParam(defaultValue = "10") Integer pageSize,
                                     @RequestParam(required = false) Long id,
@@ -30,12 +32,14 @@ public class CommentController {
 
     @PreAuthorize("@authorizeService.checkComment(#comment)")
     @PostMapping("/insert")
+    @LogAnnotation(module="评论",operator="新增评论")
     public ApiResult insertComment(@RequestBody Comment comment){
         return commentService.insertComment(comment);
     }
 
     @PreAuthorize("@authorizeService.checkComment(#comment) or hasAuthority('admin')")
     @PutMapping("/update")
+    @LogAnnotation(module="评论",operator="更改评论信息")
     public ApiResult updateComment(@RequestBody Comment comment){
         return commentService.updateComment(comment);
     }

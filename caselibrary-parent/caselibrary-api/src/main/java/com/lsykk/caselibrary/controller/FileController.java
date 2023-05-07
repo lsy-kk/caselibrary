@@ -1,5 +1,6 @@
 package com.lsykk.caselibrary.controller;
 
+import com.lsykk.caselibrary.common.aop.LogAnnotation;
 import com.lsykk.caselibrary.service.FileService;
 import com.lsykk.caselibrary.vo.ApiResult;
 import com.lsykk.caselibrary.vo.CaseBodyVo;
@@ -19,11 +20,13 @@ public class FileController {
     private FileService fileService;
 
     @PostMapping("/uploadFile")
+    @LogAnnotation(module="文件",operator="上传文件")
     public ApiResult uploadFile(MultipartFile file){
         return fileService.uploadFile(file);
     }
 
     @GetMapping("/deleteFile")
+    @LogAnnotation(module="文件",operator="删除已上传文件")
     public ApiResult deleteFile(@RequestParam String path){
         return fileService.deleteFile(path);
     }

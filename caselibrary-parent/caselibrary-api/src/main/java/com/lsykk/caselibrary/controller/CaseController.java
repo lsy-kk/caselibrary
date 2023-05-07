@@ -1,5 +1,6 @@
 package com.lsykk.caselibrary.controller;
 
+import com.lsykk.caselibrary.common.aop.LogAnnotation;
 import com.lsykk.caselibrary.common.cache.Cache;
 import com.lsykk.caselibrary.dao.pojo.CaseBody;
 import com.lsykk.caselibrary.dao.pojo.CaseHeader;
@@ -28,6 +29,7 @@ public class CaseController {
 
     // 分页、根据条件获取所有案例Vo列表
     @GetMapping("/getCaseVoList")
+    @LogAnnotation(module="案例",operator="条件获取案例列表")
     public ApiResult getCaseVoList(@RequestParam(defaultValue = "1") Integer page,
                                     @RequestParam(defaultValue = "10") Integer pageSize,
                                     @RequestParam(required = false) Long id,
@@ -43,6 +45,7 @@ public class CaseController {
     // 分页、根据条件获取所有案例列表
     @PreAuthorize("hasAuthority('admin')")
     @GetMapping("/getCaseList")
+    @LogAnnotation(module="案例",operator="管理员获取案例列表")
     public ApiResult getCaseList(@RequestParam(defaultValue = "1") Integer page,
                                  @RequestParam(defaultValue = "10") Integer pageSize,
                                  @RequestParam(required = false) Long id,
@@ -56,7 +59,8 @@ public class CaseController {
 
     // 获取热度排序列表
     @GetMapping("/getHotList")
-    @Cache(expire = 5 * 60 * 1000,name = "hot_caseList")
+    @Cache(expire = 5 * 60 * 1000,name = "getHotCaseList")
+    @LogAnnotation(module="案例",operator="获取最热案例列表")
     public ApiResult getHotList(@RequestParam(defaultValue = "1") Integer page,
                                 @RequestParam(defaultValue = "10") Integer pageSize){
         PageParams pageParams = new PageParams(page, pageSize);
@@ -65,6 +69,7 @@ public class CaseController {
 
     // 获取搜索关键字排序列表
     @GetMapping("/getSearchList")
+    @LogAnnotation(module="案例",operator="获取搜索案例列表")
     public ApiResult getSearchList(@RequestParam(defaultValue = "1") Integer page,
                                    @RequestParam(defaultValue = "10") Integer pageSize,
                                    @RequestParam(defaultValue = "") String keyword,
@@ -74,6 +79,7 @@ public class CaseController {
     }
 
     @GetMapping("/getListByTagId")
+    @LogAnnotation(module="案例",operator="根据标签获取案例列表")
     public ApiResult getListByTagId(@RequestParam(defaultValue = "1") Integer page,
                                     @RequestParam(defaultValue = "10") Integer pageSize,
                                     @RequestParam Long tagId){
@@ -82,6 +88,7 @@ public class CaseController {
     }
 
     @GetMapping("/getListByFavoritesId")
+    @LogAnnotation(module="案例",operator="根据收藏夹获取案例列表")
     public ApiResult getListByFavoritesId(@RequestParam(defaultValue = "1") Integer page,
                                           @RequestParam(defaultValue = "10") Integer pageSize,
                                           @RequestParam Long favoritesId){
@@ -90,6 +97,7 @@ public class CaseController {
     }
 
     @GetMapping("/getCaseHeaderVo")
+    @LogAnnotation(module="案例",operator="根据ID获取案例")
     public ApiResult getCaseHeaderVo(@RequestParam Long caseId,
                                      @RequestParam(defaultValue = "false") boolean isBody,
                                      @RequestParam(defaultValue = "false") boolean isComment){
@@ -99,18 +107,21 @@ public class CaseController {
 
     @PreAuthorize("@authorizeService.checkCaseParam(#caseParam) and hasAuthority('teacher')")
     @PostMapping("/submitCaseParam")
+    @LogAnnotation(module="案例",operator="提交案例参数")
     public ApiResult submitCaseParam(@RequestBody CaseParam caseParam){
         return caseService.submitCaseParam(caseParam);
     }
 
     @PreAuthorize("hasAuthority('teacher')")
     @GetMapping("/getCaseParam")
+    @LogAnnotation(module="案例",operator="获取案例参数")
     public ApiResult getCaseParam(@RequestParam(required = false) Long caseId){
         return caseService.getCaseParamById(caseId);
     }
 
     @PreAuthorize("hasAuthority('admin')")
     @PutMapping("/update")
+    @LogAnnotation(module="案例",operator="更改案例头部信息")
     public ApiResult updateCaseHeader(@RequestBody CaseHeader caseHeader){
         return caseService.updateCaseHeader(caseHeader);
     }

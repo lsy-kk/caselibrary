@@ -1,5 +1,6 @@
 package com.lsykk.caselibrary.controller;
 
+import com.lsykk.caselibrary.common.aop.LogAnnotation;
 import com.lsykk.caselibrary.service.*;
 import com.lsykk.caselibrary.vo.ApiResult;
 import com.lsykk.caselibrary.vo.NoticeVo;
@@ -22,6 +23,7 @@ public class BackdoorController {
     private NoticeService noticeService;
 
     @GetMapping("/sendMessage")
+    @LogAnnotation(module="后门",operator="对所有在线用户发送测试消息")
     public ApiResult sendMessage(){
         NoticeVo noticeVo = new NoticeVo();
         noticeVo.setContent("你好");
@@ -31,16 +33,19 @@ public class BackdoorController {
     }
 
     @GetMapping("/caseHeaderVoRepository")
+    @LogAnnotation(module="后门",operator="同步ES的caseHeaderVo数据库")
     public ApiResult caseHeaderVoRepositoryReload(){
         return caseService.caseHeaderVoRepositoryReload();
     }
 
     @GetMapping("/tagVoRepository")
+    @LogAnnotation(module="后门",operator="同步ES的tagVo数据库")
     public ApiResult tagVoRepositoryReload(){
         return tagService.tagVoRepositoryReload();
     }
 
     @GetMapping("/userVoRepository")
+    @LogAnnotation(module="后门",operator="同步ES的userVo数据库")
     public ApiResult userVoRepositoryReload(){
         return userService.userVoRepositoryReload();
     }

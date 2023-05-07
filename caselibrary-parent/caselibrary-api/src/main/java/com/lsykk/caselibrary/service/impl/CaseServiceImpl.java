@@ -133,37 +133,6 @@ public class CaseServiceImpl implements CaseService {
     }
 
     @Override
-    public ApiResult getOtherAuthorList(PageParams pageParams, Long userId, boolean isBody, boolean isComment){
-        //分页查询 case数据库表
-        Page<CaseHeader> page = new Page<>(pageParams.getPage(), pageParams.getPageSize());
-        LambdaQueryWrapper<CaseHeader> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(CaseHeader::getStatus, 1);
-        queryWrapper.eq(CaseHeader::getState, 1);
-        queryWrapper.eq(CaseHeader::getVisible, 1);
-        queryWrapper.eq(userId!=null, CaseHeader::getAuthorId, userId);
-        // 按照id倒序排序
-        queryWrapper.orderByDesc(CaseHeader::getId);
-        Page<CaseHeader> casePage = caseHeaderMapper.selectPage(page, queryWrapper);
-        List<CaseHeader> caseHeaderList = casePage.getRecords();
-        return ApiResult.success(copyList(caseHeaderList, isBody, isComment));
-    }
-
-    @Override
-    public ApiResult getMyList(PageParams pageParams, Long userId, Integer visible, Integer state, boolean isBody, boolean isComment){
-        //分页查询 case数据库表
-        Page<CaseHeader> page = new Page<>(pageParams.getPage(), pageParams.getPageSize());
-        LambdaQueryWrapper<CaseHeader> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(CaseHeader::getStatus, 1);
-        queryWrapper.eq(state!=null, CaseHeader::getState, state);
-        queryWrapper.eq(userId!=null, CaseHeader::getAuthorId, userId);
-        // 按照id倒序排序
-        queryWrapper.orderByDesc(CaseHeader::getId);
-        Page<CaseHeader> casePage = caseHeaderMapper.selectPage(page, queryWrapper);
-        List<CaseHeader> caseHeaderList = casePage.getRecords();
-        return ApiResult.success(copyList(caseHeaderList, isBody, isComment));
-    }
-
-    @Override
     public ApiResult getSearchList(PageParams pageParams, String keyWords, String type){
         // 查询条件
         QueryBuilder queryBuilder = QueryBuilders.boolQuery()
@@ -374,16 +343,13 @@ public class CaseServiceImpl implements CaseService {
 
     @Override
     public ApiResult updateCaseHeader(CaseHeader caseHeader){
-        if (StringUtils.isBlank(caseHeader.getTitle()) ||
-                caseHeader.getId() == null ||
-                caseHeader.getAuthorId() == null ||
-                caseHeader.getVisible() == null ||
-                caseHeader.getState() == null){
+        if (caseHeader.getId() == null){
             return ApiResult.fail(ErrorCode.PARAMS_ERROR);
         }
         caseHeader.setUpdateTime(new Timestamp(System.currentTimeMillis()));
         caseHeaderMapper.updateById(caseHeader);
-        caseHeaderVoRepository.save(copy(caseHeader, false, false));
+        CaseHeader newCaseHeader = getCaseHeaderById(caseHeader.getId());
+        caseHeaderVoRepository.save(copy(newCaseHeader, false, false));
         return ApiResult.success();
     }
     private List<CaseHeaderVo> copyList(List<CaseHeader> list, boolean isBody, boolean isComment){

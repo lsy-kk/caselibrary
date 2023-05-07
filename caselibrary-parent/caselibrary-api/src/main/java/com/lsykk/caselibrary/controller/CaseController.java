@@ -73,30 +73,6 @@ public class CaseController {
         return caseService.getSearchList(pageParams, keyword, type);
     }
 
-    // 获取其他作者主页案例列表
-    @GetMapping("/getOtherAuthorList")
-    public ApiResult getOtherAuthorList(@RequestParam(defaultValue = "1") Integer page,
-                                        @RequestParam(defaultValue = "10") Integer pageSize,
-                                        @RequestParam(defaultValue = "10") Long userId,
-                                        @RequestParam(defaultValue = "false") boolean isBody,
-                                        @RequestParam(defaultValue = "false") boolean isComment){
-        PageParams pageParams = new PageParams(page, pageSize);
-        return caseService.getOtherAuthorList(pageParams, userId, isBody, isComment);
-    }
-
-    // 获取个人主页案例列表
-    @GetMapping("/getMyList")
-    public ApiResult getMyList(@RequestParam(defaultValue = "1") Integer page,
-                               @RequestParam(defaultValue = "10") Integer pageSize,
-                               @RequestParam Long userId,
-                               @RequestParam(defaultValue = "1") Integer visible,
-                               @RequestParam(defaultValue = "3") Integer state,
-                               @RequestParam(defaultValue = "false") boolean isBody,
-                               @RequestParam(defaultValue = "false") boolean isComment){
-        PageParams pageParams = new PageParams(page, pageSize);
-        return caseService.getMyList(pageParams, userId, visible, state, isBody, isComment);
-    }
-
     @GetMapping("/getListByTagId")
     public ApiResult getListByTagId(@RequestParam(defaultValue = "1") Integer page,
                                     @RequestParam(defaultValue = "10") Integer pageSize,
@@ -127,6 +103,7 @@ public class CaseController {
         return caseService.submitCaseParam(caseParam);
     }
 
+    @PreAuthorize("hasAuthority('teacher')")
     @GetMapping("/getCaseParam")
     public ApiResult getCaseParam(@RequestParam(required = false) Long caseId){
         return caseService.getCaseParamById(caseId);

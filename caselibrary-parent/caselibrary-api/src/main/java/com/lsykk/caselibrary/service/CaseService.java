@@ -47,24 +47,6 @@ public interface CaseService {
     ApiResult getHotList(PageParams pageParams);
 
     /**
-     * 获取其他用户的案例列表（visible=1，state=1，status=1）
-     * @param pageParams
-     * @param userId
-     * @return
-     */
-    ApiResult getOtherAuthorList(PageParams pageParams, Long userId, boolean isBody, boolean isComment);
-
-    /**
-     * 获取自己的案例列表（visible=0|1，state可选，status=1）
-     * @param pageParams
-     * @param userId
-     * @param visible
-     * @param state
-     * @return
-     */
-    ApiResult getMyList(PageParams pageParams, Long userId, Integer visible, Integer state, boolean isBody, boolean isComment);
-
-    /**
      * 案例关键字（title，summary）搜索，分页获取结果
      * @param pageParams
      * @param keyWords

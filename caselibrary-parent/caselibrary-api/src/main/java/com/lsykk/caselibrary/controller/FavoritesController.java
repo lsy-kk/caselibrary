@@ -61,17 +61,19 @@ public class FavoritesController {
         return favoritesService.updateFavorites(favorites);
     }
 
-    @PreAuthorize("@authorizeService.checkFavorites(#favorites) or hasAuthority('admin')")
+    @PreAuthorize("@authorizeService.checkFavoritesId(#favoritesId) or hasAuthority('admin')")
     @GetMapping("/changeStatus")
     public ApiResult changeStatus(@RequestParam Long favoritesId, @RequestParam Integer status){
         return favoritesService.changeFavoritesStatus(favoritesId, status);
     }
 
+    @PreAuthorize("@authorizeService.checkFavoritesInstanceList(#favoritesInstances)")
     @PostMapping("/insertItems")
     public ApiResult insertItems(@RequestBody List<FavoritesInstance> favoritesInstances){
         return favoritesService.insertItems(favoritesInstances);
     }
 
+    @PreAuthorize("@authorizeService.checkFavoritesInstanceList(#favoritesInstances)")
     @PutMapping("/deleteItems")
     public ApiResult deleteItems(@RequestBody List<FavoritesInstance> favoritesInstances){
         return favoritesService.deleteItems(favoritesInstances);

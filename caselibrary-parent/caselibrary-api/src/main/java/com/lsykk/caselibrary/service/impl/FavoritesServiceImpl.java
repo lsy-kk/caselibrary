@@ -124,10 +124,7 @@ public class FavoritesServiceImpl implements FavoritesService {
 
     @Override
     public ApiResult updateFavorites(Favorites favorites){
-        if (favorites.getId() == null ||
-                StringUtils.isBlank(favorites.getName()) ||
-                favorites.getOwnerId() == null ||
-                favorites.getVisible() == null){
+        if (favorites.getId() == null){
             return ApiResult.fail(ErrorCode.PARAMS_ERROR.getCode(), ErrorCode.PARAMS_ERROR.getMsg());
         }
         favoritesMapper.updateById(favorites);

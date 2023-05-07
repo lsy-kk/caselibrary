@@ -13,7 +13,7 @@ public interface UserService {
      * @param token
      * @return
      */
-    ApiResult findUserByToken(String token);
+    ApiResult findUserVoByToken(String token);
 
     /**
      * 分页获取用户列表

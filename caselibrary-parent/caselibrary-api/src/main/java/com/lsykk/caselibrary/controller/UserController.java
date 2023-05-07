@@ -60,14 +60,9 @@ public class UserController {
         return userService.updatePassword(user);
     }
 
-    @GetMapping("/getUserByToken")
-    public ApiResult getUserByToken(@RequestParam String token){
-        return userService.findUserByToken(token);
-    }
-
-    @GetMapping("/getUserById")
-    public ApiResult getUserById(@RequestParam Long id){
-        return ApiResult.success(userService.findUserById(id));
+    @GetMapping("/getUserVoByToken")
+    public ApiResult getUserVoByToken(@RequestHeader("Authorization") String token){
+        return userService.findUserVoByToken(token);
     }
 
     @GetMapping("/getUserVoById")

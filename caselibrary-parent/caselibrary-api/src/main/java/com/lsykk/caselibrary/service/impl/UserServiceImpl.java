@@ -55,7 +55,7 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public ApiResult findUserByToken(String token) {
+    public ApiResult findUserVoByToken(String token) {
         /**
          * 1. token合法性校验
          *    是否为空，解析是否成功 redis是否存在
@@ -82,8 +82,10 @@ public class UserServiceImpl implements UserService {
         /* 按照ID顺序排序 */
         queryWrapper.orderByAsc(User::getId);
         Page<User> userPage = userMapper.selectPage(page, queryWrapper);
-        List<User> userList = userPage.getRecords();
-        return ApiResult.success(userList);
+        PageVo<User> pageVo = new PageVo<>();
+        pageVo.setRecordList(userPage.getRecords());
+        pageVo.setTotal(userPage.getTotal());
+        return ApiResult.success(pageVo);
     }
 
     @Override
@@ -171,21 +173,22 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ApiResult updateUser(User user){
-        /* 检查参数是否合法 */
-        if (user.getId() == null
-            || StringUtils.isBlank(user.getEmail())
-            || StringUtils.isBlank(user.getUsername())){
+        // 更新一定要有id
+        if (user.getId() == null){
             return ApiResult.fail(ErrorCode.PARAMS_ERROR.getCode(), ErrorCode.PARAMS_ERROR.getMsg());
         }
-        /* 检查邮箱是否唯一 */
-        User emailUser = findUserByEmail(user.getEmail());
-        if (emailUser != null && !user.getId().equals(emailUser.getId())){
-            return ApiResult.fail(ErrorCode.ACCOUNT_EXIST.getCode(),"该邮箱已经被注册了");
+        if (StringUtils.isNotBlank(user.getEmail())){
+            /* 检查邮箱是否唯一 */
+            User emailUser = findUserByEmail(user.getEmail());
+            if (emailUser != null && !user.getId().equals(emailUser.getId())){
+                return ApiResult.fail(ErrorCode.ACCOUNT_EXIST.getCode(),"该邮箱已经被注册了");
+            }
         }
         // 不能用于更新密码
         user.setPassword(null);
         userMapper.updateById(user);
-        userVoRepository.save(copy(user));
+        User newUser = findUserById(user.getId());
+        userVoRepository.save(copy(newUser));
         return ApiResult.success();
     }
 

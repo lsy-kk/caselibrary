@@ -57,11 +57,6 @@ public class TagController {
         return tagService.findTagVoById(id);
     }
 
-    @GetMapping("/findTagVoByCaseId")
-    public ApiResult findTagVoByCaseId(@RequestParam Long caseId){
-        return ApiResult.success(tagService.findTagVoByCaseId(caseId));
-    }
-
     @PreAuthorize("hasAuthority('admin')")
     @PostMapping("/insert")
     public ApiResult insert(@RequestBody Tag tag){

@@ -6,6 +6,7 @@ import com.lsykk.caselibrary.dao.mapper.CaseTagMapper;
 import com.lsykk.caselibrary.dao.mapper.TagMapper;
 import com.lsykk.caselibrary.dao.pojo.CaseTag;
 import com.lsykk.caselibrary.dao.pojo.Tag;
+import com.lsykk.caselibrary.dao.pojo.User;
 import com.lsykk.caselibrary.dao.repository.TagVoRepository;
 import com.lsykk.caselibrary.service.TagService;
 import com.lsykk.caselibrary.utils.DateUtils;
@@ -49,8 +50,10 @@ public class TagServiceImpl implements TagService {
         /* 按照ID顺序排序 */
         queryWrapper.orderByAsc(Tag::getId);
         Page<Tag> tagPage = tagMapper.selectPage(page, queryWrapper);
-        List<Tag> tagList = tagPage.getRecords();
-        return ApiResult.success(tagList);
+        PageVo<Tag> pageVo = new PageVo<>();
+        pageVo.setRecordList(tagPage.getRecords());
+        pageVo.setTotal(tagPage.getTotal());
+        return ApiResult.success(pageVo);
     }
 
     @Override
@@ -74,7 +77,7 @@ public class TagServiceImpl implements TagService {
     public ApiResult getTagListByPrefix(String prefix){
         LambdaQueryWrapper<Tag> queryWrapper = new LambdaQueryWrapper<>();
         /* 动态SQL语句 */
-        queryWrapper.likeLeft(StringUtils.isNotBlank(prefix), Tag::getName, prefix);
+        queryWrapper.likeRight(StringUtils.isNotBlank(prefix), Tag::getName, prefix);
         queryWrapper.orderByAsc(Tag::getId);
         List<Tag> tagList = tagMapper.selectList(queryWrapper);
         return ApiResult.success(tagList);

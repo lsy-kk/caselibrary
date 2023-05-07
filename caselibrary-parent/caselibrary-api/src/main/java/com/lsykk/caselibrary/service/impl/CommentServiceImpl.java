@@ -71,6 +71,9 @@ public class CommentServiceImpl implements CommentService {
         if (comment.getCaseId() == null || comment.getAuthorId() == null){
             return ApiResult.fail(ErrorCode.PARAMS_ERROR);
         }
+        if (comment.getParentId() == null){
+            comment.setParentId(0L);
+        }
         commentMapper.insertAndGetId(comment);
         threadService.updateCaseComment(comment.getCaseId(), 1);
         noticeService.sendMessageByComment(comment);
@@ -79,9 +82,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public ApiResult updateComment(Comment comment){
-        if (StringUtils.isBlank(comment.getContent()) ||
-                comment.getId() == null || comment.getAuthorId() == null ||
-                comment.getCaseId() == null || comment.getStatus() == null){
+        if (comment.getId() == null){
             return ApiResult.fail(ErrorCode.PARAMS_ERROR);
         }
         commentMapper.updateById(comment);

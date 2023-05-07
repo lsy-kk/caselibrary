@@ -19,16 +19,16 @@ public class CommentController {
     @PreAuthorize("hasAuthority('admin')")
     @GetMapping("/getCommentList")
     public ApiResult getCommentList(@RequestParam(defaultValue = "1") Integer page,
-                                 @RequestParam(defaultValue = "10") Integer pageSize,
-                                 @RequestParam(required = false) Long id,
-                                 @RequestParam(required = false) Long authorId,
-                                 @RequestParam(required = false) Long caseId,
-                                 @RequestParam(required = false) Integer status) {
+                                    @RequestParam(defaultValue = "10") Integer pageSize,
+                                    @RequestParam(required = false) Long id,
+                                    @RequestParam(required = false) Long authorId,
+                                    @RequestParam(required = false) Long caseId,
+                                    @RequestParam(required = false) Integer status) {
         PageParams pageParams = new PageParams(page, pageSize);
         return commentService.getCommentList(pageParams, id, authorId, caseId, status);
     }
 
-    @PreAuthorize("@authorizeService.checkComment(#comment) or hasAuthority('admin')")
+    @PreAuthorize("@authorizeService.checkComment(#comment)")
     @PostMapping("/insert")
     public ApiResult insertComment(@RequestBody Comment comment){
         return commentService.insertComment(comment);

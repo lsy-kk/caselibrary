@@ -21,8 +21,12 @@ public class AuthorizeService {
             return false;
         }
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetail userDetail  = (UserDetail)authentication.getPrincipal();
-        return userId.equals(userDetail.getId());
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof UserDetail){
+            UserDetail userDetail  = (UserDetail)authentication.getPrincipal();
+            return userId.equals(userDetail.getId());
+        }
+        return false;
     }
 
     public boolean checkUser(User user) {
@@ -30,8 +34,12 @@ public class AuthorizeService {
             return false;
         }
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetail userDetail  = (UserDetail)authentication.getPrincipal();
-        return user.getId().equals(userDetail.getId());
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof UserDetail){
+            UserDetail userDetail  = (UserDetail)authentication.getPrincipal();
+            return user.getId().equals(userDetail.getId());
+        }
+        return false;
     }
     public boolean checkCaseHeader(CaseHeader caseHeader) {
 
@@ -39,8 +47,12 @@ public class AuthorizeService {
             return false;
         }
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetail userDetail  = (UserDetail)authentication.getPrincipal();
-        return caseHeader.getAuthorId().equals(userDetail.getId());
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof UserDetail){
+            UserDetail userDetail  = (UserDetail)authentication.getPrincipal();
+            return caseHeader.getAuthorId().equals(userDetail.getId());
+        }
+        return false;
     }
 
     public boolean checkCaseParam(CaseParam caseParam) {
@@ -56,8 +68,12 @@ public class AuthorizeService {
         }
         Favorites favorites = favoritesService.findFavoritesById(favoritesId);
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetail userDetail  = (UserDetail)authentication.getPrincipal();
-        return favorites.getOwnerId().equals(userDetail.getId());
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof UserDetail){
+            UserDetail userDetail  = (UserDetail)authentication.getPrincipal();
+            return favorites.getOwnerId().equals(userDetail.getId());
+        }
+        return false;
     }
 
     public boolean checkFavorites(Favorites favorites) {
@@ -65,22 +81,30 @@ public class AuthorizeService {
             return false;
         }
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetail userDetail  = (UserDetail)authentication.getPrincipal();
-        return favorites.getOwnerId().equals(userDetail.getId());
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof UserDetail){
+            UserDetail userDetail  = (UserDetail)authentication.getPrincipal();
+            return favorites.getOwnerId().equals(userDetail.getId());
+        }
+        return false;
     }
 
     public boolean checkFavoritesInstanceList(List<FavoritesInstance> favoritesInstanceList) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetail userDetail  = (UserDetail)authentication.getPrincipal();
-        for (FavoritesInstance favoritesInstance: favoritesInstanceList){
-            if (favoritesInstance == null || favoritesInstance.getUserId() == null){
-                return false;
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof UserDetail){
+            UserDetail userDetail  = (UserDetail)authentication.getPrincipal();
+            for (FavoritesInstance favoritesInstance: favoritesInstanceList){
+                if (favoritesInstance == null || favoritesInstance.getUserId() == null){
+                    return false;
+                }
+                if (!favoritesInstance.getUserId().equals(userDetail.getId())){
+                    return false;
+                }
             }
-            if (!favoritesInstance.getUserId().equals(userDetail.getId())){
-                return false;
-            }
+            return true;
         }
-        return true;
+        return false;
     }
 
     public boolean checkComment(Comment comment) {
@@ -88,7 +112,11 @@ public class AuthorizeService {
             return false;
         }
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetail userDetail  = (UserDetail)authentication.getPrincipal();
-        return comment.getAuthorId().equals(userDetail.getId());
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof UserDetail){
+            UserDetail userDetail  = (UserDetail)authentication.getPrincipal();
+            return comment.getAuthorId().equals(userDetail.getId());
+        }
+        return false;
     }
 }

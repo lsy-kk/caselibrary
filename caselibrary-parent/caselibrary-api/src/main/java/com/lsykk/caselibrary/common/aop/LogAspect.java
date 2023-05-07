@@ -3,12 +3,15 @@ package com.lsykk.caselibrary.common.aop;
 import com.alibaba.fastjson.JSON;
 import com.lsykk.caselibrary.utils.HttpContextUtils;
 import com.lsykk.caselibrary.utils.IpUtils;
+import com.lsykk.caselibrary.vo.UserDetail;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
@@ -54,6 +57,16 @@ public class LogAspect{
         // 获取request 设置IP地址
         HttpServletRequest request = HttpContextUtils.getHttpServletRequest();
         log.info("ip: {}", IpUtils.getIpAddr(request));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Object principal = authentication.getPrincipal();
+        // 操作用户信息
+        if (principal instanceof UserDetail){
+            UserDetail userDetail = (UserDetail)principal;
+            log.info("operator: userId: {}", userDetail.getId());
+        }
+        else {
+            log.info("operator: anonymousUser");
+        }
         // 执行时间
         log.info("execute time : {} ms",time);
         log.info("===================== log end ================================");

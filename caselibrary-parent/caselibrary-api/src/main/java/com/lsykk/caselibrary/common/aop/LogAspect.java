@@ -13,6 +13,7 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
@@ -52,7 +53,15 @@ public class LogAspect{
         log.info("request method: {}",className + "." + methodName + "()");
         // 请求的参数
         Object[] args = joinPoint.getArgs();
-        String params = JSON.toJSONString(args[0]);
+        String params = "";
+        // 文件没法序列化，特判一下
+        if (args[0] instanceof MultipartFile){
+            MultipartFile file = (MultipartFile)args[0];
+            params = "MultipartFile_" + file.getOriginalFilename();
+        }
+        else {
+            params = JSON.toJSONString(args[0]);
+        }
         log.info("params: {}",params);
         // 获取request 设置IP地址
         HttpServletRequest request = HttpContextUtils.getHttpServletRequest();

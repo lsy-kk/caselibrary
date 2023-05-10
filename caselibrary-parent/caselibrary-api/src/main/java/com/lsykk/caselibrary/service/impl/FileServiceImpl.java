@@ -55,6 +55,9 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public ApiResult uploadFile(MultipartFile file){
+        if (file == null){
+            return ApiResult.fail(ErrorCode.PARAMS_ERROR);
+        }
         String originName = file.getOriginalFilename();
         if (StringUtils.isBlank(originName)){
             // 上传的文件类型错误

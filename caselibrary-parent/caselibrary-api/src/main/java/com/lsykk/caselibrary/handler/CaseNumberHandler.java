@@ -27,8 +27,8 @@ public class CaseNumberHandler {
     @Autowired
     private UserService userService;
 
-    @Scheduled(cron = "0 0/5 * * * *") // 每5分钟触发一次
-    //@Scheduled(cron = "0 0 3 * * *")
+    // @Scheduled(cron = "0 0/5 * * * *") // 每5分钟触发一次
+    @Scheduled(cron = "0 0 3 * * *")
     @Async("taskExecutor")
     public void updateTagCaseNumber() {
         log.info("=====>>>>> 同步标签下案例数量开始执行  {}",new DateTime().toString("yyyy-MM-dd HH:mm:ss"));
@@ -45,8 +45,8 @@ public class CaseNumberHandler {
         log.info("=====>>>>> 同步标签下案例数量结束  {}",new DateTime().toString("yyyy-MM-dd HH:mm:ss"));
     }
 
-    @Scheduled(cron = "0 0/5 * * * *") // 每5分钟触发一次
-    //@Scheduled(cron = "0 0 3 * * *")
+    // @Scheduled(cron = "0 0/5 * * * *") // 每5分钟触发一次
+    @Scheduled(cron = "0 0 3 * * *")
     @Async("taskExecutor")
     public void updateUserCaseNumber() {
         log.info("=====>>>>> 同步用户下案例数量开始执行  {}",new DateTime().toString("yyyy-MM-dd HH:mm:ss"));

@@ -29,8 +29,8 @@ public class HotScoreHandler {
     @Autowired
     private CaseService caseService;
 
-    @Scheduled(cron = "0 0/5 * * * *") // 每5分钟触发一次
-    //@Scheduled(cron = "0 0 3 * * *")
+    // @Scheduled(cron = "0 0/5 * * * *") // 每5分钟触发一次
+    @Scheduled(cron = "0 0 3 * * *")
     // 定时任务，每天凌晨3点执行，计算新的案例热度，以供下一天排序
     @Async("taskExecutor") // 放到线程池中执行，定时任务
     public void updateCaseHotData(){

@@ -1,8 +1,6 @@
 package com.lsykk.caselibrary.utils;
-import io.jsonwebtoken.Jwt;
-import io.jsonwebtoken.JwtBuilder;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import com.lsykk.caselibrary.vo.ErrorCode;
+import io.jsonwebtoken.*;
 
 
 import java.util.Date;
@@ -24,14 +22,30 @@ public class JWTUtils {
         return jwtBuilder.compact();
     }
 
-    public static Map<String, Object> checkToken(String token){
+    public static ErrorCode checkToken(String token){
         try {
             Jwt parse = Jwts.parser().setSigningKey(jwtToken).parse(token);
-            return (Map<String, Object>) parse.getBody();
-        }catch (Exception e){
-            e.printStackTrace();
+            return null;
         }
-        return null;
+        catch (ExpiredJwtException e){
+            return ErrorCode.TOKEN_EXPIRED;
+        }
+        catch (Exception e){
+            return ErrorCode.TOKEN_ERROR;
+        }
+    }
 
+    public static String checkAndGetUserId(String token){
+        try {
+            Jwt parse = Jwts.parser().setSigningKey(jwtToken).parse(token);
+            Map<String, Object> stringObjectMap = (Map<String, Object>)parse.getBody();
+            if (stringObjectMap == null){
+                return null;
+            }
+            return String.valueOf(stringObjectMap.get("userId"));
+        }
+        catch (Exception e){
+            return null;
+        }
     }
 }

@@ -12,6 +12,7 @@ import org.aspectj.lang.Signature;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
@@ -39,18 +40,12 @@ public class CacheAspect {
             String className = pjp.getTarget().getClass().getSimpleName();
             // methodName 调用的方法名
             String methodName = signature.getName();
-            // parameterTypes 参数类型
-            Class[] parameterTypes = new Class[pjp.getArgs().length];
             Object[] args = pjp.getArgs();
             // params 将所有参数拼接得到的字符串
             StringBuilder params = new StringBuilder();
-            for (int i=0; i<args.length; i++) {
-                if (args[i] != null) {
-                    params.append(JSON.toJSONString(args[i]));
-                    parameterTypes[i] = args[i].getClass();
-                }
-                else {
-                    parameterTypes[i] = null;
+            for (Object arg : args) {
+                if (arg != null) {
+                    params.append(JSON.toJSONString(arg));
                 }
             }
             if (StringUtils.isNotEmpty(params.toString())) {
@@ -58,7 +53,7 @@ public class CacheAspect {
                 params = new StringBuilder(DigestUtils.md5Hex(params.toString()));
             }
             // 根据方法名和参数类型获取signature
-            Method method = pjp.getSignature().getDeclaringType().getMethod(methodName, parameterTypes);
+            Method method = getMethod(pjp);
             // 获取Cache注解
             Cache annotation = method.getAnnotation(Cache.class);
             // 缓存过期时间
@@ -66,18 +61,17 @@ public class CacheAspect {
             // 缓存名称
             String name = annotation.name();
             // 拼接redisKey
-            String redisKey = name + "::" + className + "::" +methodName + "::" + params;
+            String redisKey = "Cache_" + name + "::" + className + "::" +methodName + "::" + params;
             // 尝试根据redisKey获取方法执行结果
             String redisValue = redisTemplate.opsForValue().get(redisKey);
             // 若找到缓存，直接返回
             if (StringUtils.isNotEmpty(redisValue)){
                 log.info("get method result from redis, className = {}, methodName = {}", className, methodName);
-                ApiResult result = JSON.parseObject(redisValue, ApiResult.class);
-                return result;
+                return JSON.parseObject(redisValue, ApiResult.class);
             }
             // 否则执行方法，然后缓存结果
             Object proceed = pjp.proceed();
-            redisTemplate.opsForValue().set(redisKey,JSON.toJSONString(proceed), Duration.ofMillis(expire));
+            redisTemplate.opsForValue().set(redisKey, JSON.toJSONString(proceed), Duration.ofMillis(expire));
             log.info("put method result to redis, className = {}, methodName = {}", className, methodName);
             return proceed;
         }
@@ -85,5 +79,14 @@ public class CacheAspect {
             throwable.printStackTrace();
         }
         return ApiResult.fail(ErrorCode.SYSTEM_ERROR);
+    }
+
+    /**
+     * 获取调用的方法
+     */
+    private Method getMethod(ProceedingJoinPoint pjp) throws NoSuchMethodException {
+        MethodSignature methodSignature = (MethodSignature) pjp.getSignature();
+        Method method = methodSignature.getMethod();
+        return pjp.getTarget().getClass().getDeclaredMethod(method.getName(), method.getParameterTypes());
     }
 }

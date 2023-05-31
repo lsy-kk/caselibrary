@@ -54,8 +54,12 @@ public class LogAspect{
         // 请求的参数
         Object[] args = joinPoint.getArgs();
         String params = "";
+        // 没有入参
+        if (args.length == 0){
+            params = "(none)";
+        }
         // 文件没法序列化，特判一下
-        if (args[0] instanceof MultipartFile){
+        else if (args[0] instanceof MultipartFile){
             MultipartFile file = (MultipartFile)args[0];
             params = "MultipartFile_" + file.getOriginalFilename();
         }

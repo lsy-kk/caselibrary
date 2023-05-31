@@ -1,6 +1,11 @@
 spring:
   application:
     name: lsykk_case_library
+  # 关闭spring data的redis仓库
+  data:
+    redis:
+      repositories:
+        enabled: false
   # 数据库配置
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -34,12 +39,23 @@ server:
   # 后端端口配置
   port: 8080
 
+mqtt:
+  hostUrl: tcp://kkysl.top:1883
+  username: admin
+  password: 001128lsy
+  clientId: serviceId:lsykkisadmin821128
+  cleanSession: true
+  reconnect: true
+  timeout: 100
+  keepAlive: 100
+  defaultTopic: topic111
+  qos: 0
 
   # mybatis-plus配置
   # 打印日志到控制台，
 mybatis-plus:
-  # configuration:
-    # log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+#  configuration:
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   mapper-locations: classpath:com.lsykk.caselibrary.dao.mapper/*.xml
 
   # 标识表名称的前缀

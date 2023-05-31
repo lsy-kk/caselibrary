@@ -23,8 +23,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -57,10 +55,8 @@ public class LoginServiceImpl implements LoginService {
                 new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword());
         Authentication authentication = authenticationManager.authenticate(authenticationToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        /* 生成token，redis缓存备用*/
-        String token = JWTUtils.createToken(user.getId());
-        redisTemplate.opsForValue().set("TOKEN_"+token, JSON.toJSONString(user),1, TimeUnit.DAYS);
-        return ApiResult.success(token);
+        /* 返回生成token */
+        return ApiResult.success(JWTUtils.createToken(user.getId()));
     }
 
     @Override
@@ -70,7 +66,6 @@ public class LoginServiceImpl implements LoginService {
 
     @Override
     public ApiResult logout(String token){
-        redisTemplate.delete("TOKEN_" + token);
         return ApiResult.success();
     }
 
@@ -106,10 +101,8 @@ public class LoginServiceImpl implements LoginService {
             loginParam.setPassword("");
             return register(loginParam);
         }
-        // 已注册邮箱，直接登录
-        String token = JWTUtils.createToken(user.getId());
-        redisTemplate.opsForValue().set("TOKEN_"+token, JSON.toJSONString(user),1, TimeUnit.DAYS);
-        return ApiResult.success(token);
+        // 已注册邮箱，直接登录，返回token
+        return ApiResult.success(JWTUtils.createToken(user.getId()));
     }
 
      // 检查验证码
@@ -152,10 +145,9 @@ public class LoginServiceImpl implements LoginService {
         user.setAuthority(2);
         user.setStatus(1);
         userService.saveUser(user);
-        /* 生成token，redis缓存备用*/
-        String token = JWTUtils.createToken(user.getId());
-        redisTemplate.opsForValue().set("TOKEN_"+token, JSON.toJSONString(user),1, TimeUnit.DAYS);
-        return ApiResult.success(token);
+        redisTemplate.opsForValue().set("UserVo_" + String.valueOf(user.getId()), JSON.toJSONString(user),5, TimeUnit.MINUTES);
+        /* 生成token */
+        return ApiResult.success(JWTUtils.createToken(user.getId()));
     }
 
     @Override
@@ -163,29 +155,23 @@ public class LoginServiceImpl implements LoginService {
         if (StringUtils.isBlank(token)){
             return null;
         }
-        Map<String, Object> stringObjectMap = JWTUtils.checkToken(token);
-        if (stringObjectMap == null){
+        String str = JWTUtils.checkAndGetUserId(token);
+        if (str == null){
             return null;
         }
-        /* 根据token，获取redis中缓存的user信息 */
-        String userJson = redisTemplate.opsForValue().get("TOKEN_" + token);
-        if (StringUtils.isBlank(userJson)){
-            return null;
-        }
-        return JSON.parseObject(userJson, User.class);
+        Long userId = Long.valueOf(str);
+        return userService.findUserById(userId);
     }
 
     @Override
-    public UserVo reLogin(String token){
-        User user = checkToken(token);
-        User newUser = userService.findUserById(user.getId());
-        if (StringUtils.isNotBlank(redisTemplate.opsForValue().get("TOKEN_"+token))){
-            // 更新token对应的信息，有效期设置为剩余时间（毫秒单位）
-            Long resTime = redisTemplate.getExpire("TOKEN_" + token);
-            redisTemplate.delete("TOKEN_"+token);
-            redisTemplate.opsForValue().set("TOKEN_"+token, JSON.toJSONString(newUser), resTime);
+    public ApiResult reLogin(String token){
+        String str = JWTUtils.checkAndGetUserId(token);
+        if (str == null){
+            return ApiResult.fail(ErrorCode.TOKEN_ERROR);
         }
-        return copy(newUser);
+        Long userId = Long.valueOf(str);
+        // 返回新token
+        return ApiResult.success(JWTUtils.createToken(userId));
     }
 
     public UserVo copy(User user){

@@ -48,6 +48,6 @@ public class LoginController {
     @GetMapping("/reLogin")
     @LogAnnotation(module="登录",operator="重新登录")
     public ApiResult reLogin(@RequestHeader("Authorization") String token){
-        return ApiResult.success(loginService.reLogin(token));
+        return loginService.reLogin(token);
     }
 }

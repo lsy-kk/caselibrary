@@ -61,5 +61,5 @@ public interface LoginService {
      * @param token
      * @return
      */
-    UserVo reLogin(String token);
+    ApiResult reLogin(String token);
 }

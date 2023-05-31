@@ -6,9 +6,9 @@ import com.lsykk.caselibrary.dao.mapper.CaseTagMapper;
 import com.lsykk.caselibrary.dao.mapper.TagMapper;
 import com.lsykk.caselibrary.dao.pojo.CaseTag;
 import com.lsykk.caselibrary.dao.pojo.Tag;
-import com.lsykk.caselibrary.dao.pojo.User;
 import com.lsykk.caselibrary.dao.repository.TagVoRepository;
 import com.lsykk.caselibrary.service.TagService;
+import com.lsykk.caselibrary.service.ThreadService;
 import com.lsykk.caselibrary.utils.DateUtils;
 import com.lsykk.caselibrary.vo.*;
 import com.lsykk.caselibrary.vo.params.PageParams;
@@ -38,6 +38,8 @@ public class TagServiceImpl implements TagService {
     private ElasticsearchRestTemplate elasticsearchRestTemplate;
     @Autowired
     private CaseTagMapper caseTagMapper;
+    @Autowired
+    private ThreadService threadService;
 
     @Override
     public ApiResult getTagList(PageParams pageParams, Tag tag){
@@ -119,6 +121,7 @@ public class TagServiceImpl implements TagService {
     public ApiResult tagVoRepositoryReload(){
         LambdaQueryWrapper<Tag> queryWrapper = new LambdaQueryWrapper<>();
         List<Tag> tagList = tagMapper.selectList(queryWrapper);
+        tagVoRepository.deleteAll();
         for (Tag tag: tagList){
             tagVoRepository.save(copy(tag));
         }
@@ -179,6 +182,7 @@ public class TagServiceImpl implements TagService {
                 mp.put("tag_id", oldList.get(i));
                 mp.put("case_id", caseId);
                 caseTagMapper.deleteByMap(mp);
+                threadService.updateTagCaseNumber(oldList.get(i), -1);
                 ++i;
             }
             if (i < oldList.size() && id.equals(oldList.get(i))){
@@ -191,6 +195,7 @@ public class TagServiceImpl implements TagService {
                 caseTag.setTagId(id);
                 caseTag.setCaseId(caseId);
                 caseTagMapper.insert(caseTag);
+                threadService.updateTagCaseNumber(id, 1);
             }
         }
     }

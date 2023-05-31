@@ -50,6 +50,12 @@ public interface TagService {
     ApiResult tagVoRepositoryReload();
 
     /**
+     * 更新所有标签的caseNumber字段
+     * @return
+     */
+    // ApiResult updateTagCaseNumber();
+
+    /**
      * 根据id获取tagVo
      * @param id
      * @return

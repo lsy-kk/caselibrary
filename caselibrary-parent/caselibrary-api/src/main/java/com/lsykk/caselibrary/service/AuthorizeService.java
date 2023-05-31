@@ -16,6 +16,16 @@ public class AuthorizeService {
     @Autowired
     private FavoritesService favoritesService;
 
+    public Long getUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof UserDetail){
+            UserDetail userDetail  = (UserDetail)authentication.getPrincipal();
+            return userDetail.getId();
+        }
+        return null;
+    }
+
     public boolean checkUserId(Long userId) {
         if (userId== null){
             return false;

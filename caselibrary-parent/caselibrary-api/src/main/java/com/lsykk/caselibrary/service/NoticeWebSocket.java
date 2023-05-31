@@ -127,7 +127,7 @@ public class NoticeWebSocket {
      */
     @OnMessage
     public void onMessage(String message, Session session) {
-        log.info("收到来自用户 "+this.userId+"的信息: "+message);
+        //log.info("收到来自用户 "+this.userId+"的信息: "+message);
     }
 
     /**

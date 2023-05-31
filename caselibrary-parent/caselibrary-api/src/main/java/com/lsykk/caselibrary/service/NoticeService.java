@@ -5,6 +5,7 @@ import com.lsykk.caselibrary.dao.pojo.Comment;
 import com.lsykk.caselibrary.dao.pojo.Notice;
 import com.lsykk.caselibrary.vo.ApiResult;
 import com.lsykk.caselibrary.vo.NoticeVo;
+import com.lsykk.caselibrary.vo.params.PageParams;
 
 import java.util.List;
 
@@ -46,13 +47,20 @@ public interface NoticeService {
     boolean sendMessageByComment(Comment comment);
 
     /**
-     * 私信通知
+     * 发送私信通知
      * @param fromId
      * @param toId
      * @param content
      * @return
      */
     boolean sendCommunicateMessage(Long fromId, Long toId, String content);
+
+    /**
+     * 获取私信通知
+     * @param userId
+     * @return
+     */
+    ApiResult getChatNoticeByUserId(PageParams pageParams, Long userId);
     /**
      * 向数据库插入一条消息
      * @param notice

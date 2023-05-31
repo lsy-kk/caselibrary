@@ -1,6 +1,7 @@
 package com.lsykk.caselibrary.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lsykk.caselibrary.dao.mapper.NoticeMapper;
 import com.lsykk.caselibrary.dao.pojo.CaseHeader;
 import com.lsykk.caselibrary.dao.pojo.Comment;
@@ -12,7 +13,10 @@ import com.lsykk.caselibrary.service.NoticeWebSocket;
 import com.lsykk.caselibrary.service.UserService;
 import com.lsykk.caselibrary.utils.DateUtils;
 import com.lsykk.caselibrary.vo.ApiResult;
+import com.lsykk.caselibrary.vo.CaseHeaderVo;
 import com.lsykk.caselibrary.vo.NoticeVo;
+import com.lsykk.caselibrary.vo.PageVo;
+import com.lsykk.caselibrary.vo.params.PageParams;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -70,9 +74,6 @@ public class NoticeServiceImpl implements NoticeService {
             notice.setTitle("对你的案例发表了评论，请前往回复");
         }
         else {
-            if (comment.getToUserId().equals(comment.getAuthorId())){
-                return true;
-            }
             notice.setToId(comment.getToUserId());;
             notice.setTitle("回复了您的评论，请前往查看");
         }
@@ -93,6 +94,16 @@ public class NoticeServiceImpl implements NoticeService {
         notice.setContent(content);
         notice.setType(3);
         return sendMessage(notice);
+    }
+
+    @Override
+    public ApiResult getChatNoticeByUserId(PageParams pageParams, Long userId){
+        Page page = new Page(pageParams.getPage(), pageParams.getPageSize());
+        Page<Notice> noticePage = noticeMapper.findChatByUserId(page, userId);
+        PageVo<NoticeVo> pageVo = new PageVo();
+        pageVo.setRecordList(copyList(noticePage.getRecords()));
+        pageVo.setTotal(noticePage.getTotal());
+        return ApiResult.success(pageVo);
     }
 
     @Override

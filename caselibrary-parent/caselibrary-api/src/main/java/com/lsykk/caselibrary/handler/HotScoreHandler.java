@@ -35,16 +35,25 @@ public class HotScoreHandler {
     @Async("taskExecutor") // 放到线程池中执行，定时任务
     public void updateCaseHotData(){
         log.info("=====>>>>> 同步案例热度数据开始执行  {}",new DateTime().toString("yyyy-MM-dd HH:mm:ss"));
+        // viewtimes没有变化就没必要更新热度了
         Set<Object>  keys = redisTemplate.opsForHash().keys("Viewtimes");
         for (Object key: keys){
             Long caseId = Long.parseLong(key.toString());
             CaseHeader caseHeader = caseService.getCaseHeaderById(caseId);
+            if (caseHeader == null){
+                log.info("cannot find caseId={}",caseId);
+                redisTemplate.opsForHash().delete("Viewtimes", key);
+                redisTemplate.opsForHash().delete("Comment", key);
+                redisTemplate.opsForHash().delete("Favorites", key);
+                redisTemplate.opsForHash().delete("Thumb", key);
+                continue;
+            }
             // 更新viewtimes，并清空redis中数据
             Object value = redisTemplate.opsForHash().get("Viewtimes", key);
             int viewtimes = Integer.parseInt(value.toString());
-            caseHeader.setViewtimes(caseHeader.getViewtimes() + viewtimes);
             redisTemplate.opsForHash().delete("Viewtimes", key);
             redisTemplate.opsForHash().put("Viewtimes", key, String.valueOf(0));
+            caseHeader.setViewtimes(caseHeader.getViewtimes() + viewtimes);
             // 更新comment，并清空redis中数据
             value = redisTemplate.opsForHash().get("Comment", key);
             int comment = 0;

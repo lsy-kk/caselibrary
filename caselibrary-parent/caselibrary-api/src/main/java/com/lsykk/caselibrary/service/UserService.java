@@ -35,6 +35,13 @@ public interface UserService {
      * @return
      */
     ApiResult userVoRepositoryReload();
+
+    /**
+     * 更新所有用户的caseNumber字段
+     * @return
+     */
+    // ApiResult updateUserCaseNumber();
+
     /**
      * 根据user_id查找用户
      * @param id
@@ -92,6 +99,13 @@ public interface UserService {
      * @return
      */
     ApiResult updateUser(User user);
+
+    /**
+     * 更新用户
+     * @param user
+     * @return
+     */
+    void update(User user);
 
     /**
      * 根据user_id删除用户

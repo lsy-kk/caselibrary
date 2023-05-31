@@ -44,22 +44,4 @@ public class CaseNumberHandler {
         }
         log.info("=====>>>>> 同步标签下案例数量结束  {}",new DateTime().toString("yyyy-MM-dd HH:mm:ss"));
     }
-
-    // @Scheduled(cron = "0 0/5 * * * *") // 每5分钟触发一次
-    @Scheduled(cron = "0 0 3 * * *")
-    @Async("taskExecutor")
-    public void updateUserCaseNumber() {
-        log.info("=====>>>>> 同步用户下案例数量开始执行  {}",new DateTime().toString("yyyy-MM-dd HH:mm:ss"));
-        Set<Object>  keys = redisTemplate.opsForHash().keys("User_CaseNumber");
-        for (Object key: keys) {
-            Long userId = Long.parseLong(key.toString());
-            User user = userService.findUserById(userId);
-            Object value = redisTemplate.opsForHash().get("User_CaseNumber", key);
-            int caseNumber = Integer.parseInt(value.toString());
-            user.setCaseNumber(user.getCaseNumber() + caseNumber);
-            userService.updateUser(user);
-            redisTemplate.opsForHash().delete("User_CaseNumber", key);
-        }
-        log.info("=====>>>>> 同步用户下案例数量结束  {}",new DateTime().toString("yyyy-MM-dd HH:mm:ss"));
-    }
 }

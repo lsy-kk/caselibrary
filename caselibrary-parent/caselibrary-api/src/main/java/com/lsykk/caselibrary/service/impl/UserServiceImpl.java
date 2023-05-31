@@ -1,16 +1,17 @@
 package com.lsykk.caselibrary.service.impl;
 
-import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lsykk.caselibrary.dao.mapper.UserMapper;
 import com.lsykk.caselibrary.dao.pojo.User;
 import com.lsykk.caselibrary.dao.repository.UserVoRepository;
+import com.lsykk.caselibrary.service.AuthorizeService;
 import com.lsykk.caselibrary.service.LoginService;
 import com.lsykk.caselibrary.service.NoticeService;
 import com.lsykk.caselibrary.service.UserService;
 import com.lsykk.caselibrary.utils.DateUtils;
+import com.lsykk.caselibrary.utils.JWTUtils;
 import com.lsykk.caselibrary.vo.ApiResult;
 import com.lsykk.caselibrary.vo.ErrorCode;
 import com.lsykk.caselibrary.vo.PageVo;
@@ -34,7 +35,6 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 
 @Service
@@ -51,20 +51,20 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private NoticeService noticeService;
     @Autowired
+    private AuthorizeService authorizeService;
+    @Autowired
     private RedisTemplate<String,String> redisTemplate;
 
 
     @Override
     public ApiResult findUserVoByToken(String token) {
-        /**
-         * 1. token合法性校验
-         *    是否为空，解析是否成功 redis是否存在
-         * 2. 如果校验失败 返回错误
-         * 3. 如果成功，返回对应的结果 UserVo
-         */
+        ErrorCode errorCode = JWTUtils.checkToken(token);
+        if (errorCode != null){
+            return ApiResult.fail(errorCode);
+        }
         User user = loginService.checkToken(token);
-        if (user == null){
-            return ApiResult.fail(ErrorCode.TOKEN_ERROR.getCode(),ErrorCode.TOKEN_ERROR.getMsg());
+        if (user == null) {
+            return ApiResult.fail(ErrorCode.TOKEN_ERROR);
         }
         UserVo UserVo = copy(user);
         return ApiResult.success(UserVo);
@@ -120,6 +120,7 @@ public class UserServiceImpl implements UserService {
     public ApiResult userVoRepositoryReload(){
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
         List<User> userList = userMapper.selectList(queryWrapper);
+        userVoRepository.deleteAll();
         for (User user: userList){
             userVoRepository.save(copy(user));
         }
@@ -168,6 +169,11 @@ public class UserServiceImpl implements UserService {
         userUpdateWrapper.set(User::getPassword, enPassword);
         userUpdateWrapper.eq(User::getId, user.getId());
         userMapper.update(null, userUpdateWrapper);
+        Long userId = authorizeService.getUserId();
+        if (userId == null){
+            userId = 1L;
+        }
+        noticeService.sendSystemChangePasswordMessage(userId, user.getId());
         return ApiResult.success();
     }
 
@@ -189,7 +195,19 @@ public class UserServiceImpl implements UserService {
         userMapper.updateById(user);
         User newUser = findUserById(user.getId());
         userVoRepository.save(copy(newUser));
+        Long userId = authorizeService.getUserId();
+        if (userId == null){
+            userId = 1L;
+        }
+        noticeService.sendSystemChangeUserMessage(userId, user.getId());
         return ApiResult.success();
+    }
+
+    @Override
+    public void update(User user) {
+        userMapper.updateById(user);
+        User newUser = findUserById(user.getId());
+        userVoRepository.save(copy(newUser));
     }
 
     @Override

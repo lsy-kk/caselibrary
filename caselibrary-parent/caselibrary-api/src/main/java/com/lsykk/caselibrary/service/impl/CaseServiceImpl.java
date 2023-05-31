@@ -7,6 +7,7 @@ import com.lsykk.caselibrary.dao.mapper.CaseHeaderMapper;
 import com.lsykk.caselibrary.dao.mapper.CaseTagMapper;
 import com.lsykk.caselibrary.dao.pojo.CaseHeader;
 import com.lsykk.caselibrary.dao.pojo.CaseBody;
+import com.lsykk.caselibrary.dao.pojo.User;
 import com.lsykk.caselibrary.dao.repository.CaseHeaderVoRepository;
 import com.lsykk.caselibrary.service.*;
 import com.lsykk.caselibrary.utils.DateUtils;
@@ -214,6 +215,7 @@ public class CaseServiceImpl implements CaseService {
         //分页查询 case数据库表
         LambdaQueryWrapper<CaseHeader> queryWrapper = new LambdaQueryWrapper<>();
         List<CaseHeader> caseList = caseHeaderMapper.selectList(queryWrapper);
+        caseHeaderVoRepository.deleteAll();
         for (CaseHeader caseHeader: caseList){
             caseHeaderVoRepository.save(copy(caseHeader, false, false));
         }
@@ -303,6 +305,9 @@ public class CaseServiceImpl implements CaseService {
             caseHeader.setStatus(1);
             caseHeader.setCreateTime(new Timestamp(System.currentTimeMillis()));
             caseHeaderMapper.insertAndGetId(caseHeader);
+            User user = userService.findUserById(caseHeader.getAuthorId());
+            user.setCaseNumber(user.getCaseNumber() + 1);
+            userService.update(user);
             if (caseHeader.getId() == null){
                 return ApiResult.fail(ErrorCode.DATABASE_INSERT_ERROR);
             }

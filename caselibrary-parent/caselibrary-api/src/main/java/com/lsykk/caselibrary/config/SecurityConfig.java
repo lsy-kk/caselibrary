@@ -17,6 +17,11 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
@@ -51,9 +56,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
-            .antMatchers("/backdoor").hasAuthority("admin")
-            .antMatchers("/file").hasAuthority("student")
-            .antMatchers("/login").permitAll()
+            .antMatchers("/backdoor/**").hasAuthority("admin")
+            .antMatchers("/file/**").hasAuthority("student")
+            .antMatchers("/login/**").permitAll()
+            .and()
+            // 跨域配置
+            .cors().configurationSource(corsConfigurationSource())
             .and()
             //处理异常情况：认证失败和权限不足
             .exceptionHandling()
@@ -67,7 +75,25 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .and()
             //将TOKEN校验过滤器配置到过滤器链中，放到UsernamePasswordAuthenticationFilter之前
             .addFilterBefore(authenticationTokenFilterBean(), UsernamePasswordAuthenticationFilter.class)
-            .csrf().disable();;
+                // 跨站请求伪造，记得关
+            .csrf().disable();
+    }
+
+    // 跨域配置
+    CorsConfigurationSource corsConfigurationSource(){
+        CorsConfiguration corsConfiguration = new CorsConfiguration();
+        corsConfiguration.setAllowedHeaders(Arrays.asList("*"));
+        corsConfiguration.setAllowedMethods(Arrays.asList("*"));
+        corsConfiguration.setAllowedOrigins(Arrays.asList(
+                "http://kkysl.top",
+                "https://kkysl.top",
+                "http://47.102.116.87",
+                "http://localhost:5173",
+                "http://172.18.0.6"));
+        corsConfiguration.setMaxAge(3600L);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**",corsConfiguration);
+        return source;
     }
 }
 
